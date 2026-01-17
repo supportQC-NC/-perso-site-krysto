@@ -2,7 +2,15 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = localStorage.getItem("cart")
   ? JSON.parse(localStorage.getItem("cart"))
-  : { cartItems: [], itemsPrice: 0, shippingPrice: 0, taxPrice: 0, totalPrice: 0 };
+  : {
+      cartItems: [],
+      shippingAddress: {},
+      paymentMethod: "PayPal",
+      itemsPrice: 0,
+      shippingPrice: 0,
+      taxPrice: 0,
+      totalPrice: 0,
+    };
 
 // Fonction helper pour mettre à jour les prix
 const updatePrices = (state) => {
@@ -58,8 +66,29 @@ const cartSlice = createSlice({
       updatePrices(state);
     },
 
+    saveShippingAddress: (state, action) => {
+      state.shippingAddress = action.payload;
+      localStorage.setItem("cart", JSON.stringify(state));
+    },
+
+    savePaymentMethod: (state, action) => {
+      state.paymentMethod = action.payload;
+      localStorage.setItem("cart", JSON.stringify(state));
+    },
+
     clearCart: (state) => {
       state.cartItems = [];
+      state.itemsPrice = 0;
+      state.shippingPrice = 0;
+      state.taxPrice = 0;
+      state.totalPrice = 0;
+      localStorage.setItem("cart", JSON.stringify(state));
+    },
+
+    resetCart: (state) => {
+      state.cartItems = [];
+      state.shippingAddress = {};
+      state.paymentMethod = "PayPal";
       state.itemsPrice = 0;
       state.shippingPrice = 0;
       state.taxPrice = 0;
@@ -69,6 +98,14 @@ const cartSlice = createSlice({
   },
 });
 
-export const { addToCart, removeFromCart, updateQty, clearCart } = cartSlice.actions;
+export const {
+  addToCart,
+  removeFromCart,
+  updateQty,
+  saveShippingAddress,
+  savePaymentMethod,
+  clearCart,
+  resetCart,
+} = cartSlice.actions;
 
 export default cartSlice.reducer;

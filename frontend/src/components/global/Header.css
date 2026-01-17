@@ -263,3 +263,46 @@
 .header-tagline {
   display: none;
 }
+
+/* Profile link */
+.header-profile {
+  color: #2d6a4f;
+  text-decoration: none;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.header-profile:hover {
+  color: #40916c;
+}
+
+/* Logout button */
+.header-logout {
+  background: transparent;
+  border: 2px solid #e63946;
+  color: #e63946;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.header-logout:hover {
+  background: #e63946;
+  color: white;
+}
+
+/* Mobile logout */
+.header-actions-mobile .header-logout {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.header-actions-mobile .header-profile {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e9ecef;
+}

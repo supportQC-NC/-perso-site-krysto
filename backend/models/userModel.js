@@ -27,10 +27,6 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-
-    // ==========================================
-    // PRÉFÉRENCES NEWSLETTER & COMMUNICATIONS
-    // ==========================================
     newsletterSubscribed: {
       type: Boolean,
       default: false,
@@ -49,20 +45,16 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// ==========================================
-// MIDDLEWARE - Mise à jour des dates newsletter
-// ==========================================
-userSchema.pre("save", function (next) {
+// Middleware - Mise à jour des dates newsletter (syntaxe async)
+userSchema.pre("save", async function () {
   if (this.isModified("newsletterSubscribed")) {
     if (this.newsletterSubscribed) {
       this.newsletterSubscribedAt = new Date();
       this.newsletterUnsubscribedAt = null;
     } else if (this.newsletterSubscribedAt) {
-      // Seulement si l'user était abonné avant
       this.newsletterUnsubscribedAt = new Date();
     }
   }
-  next();
 });
 
 const User = mongoose.model("User", userSchema);

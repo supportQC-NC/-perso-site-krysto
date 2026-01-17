@@ -245,6 +245,28 @@ const products = [
     isFeatured: false,
     tags: ["sous-verre", "terrazzo", "design", "contemporain"],
   },
+  {
+    name: "Chaussons Bébé fait main crochet",
+    description_fr:
+      "Chaussons bébé faits main au crochet, doux et confortables. Parfaits pour garder les petits pieds au chaud avec style.",
+    image: "/images/chausson.jfif",
+    brand: "Krysto",
+    color: "Multicolore",
+    weight: "180g",
+    dimensions: "10cm x 10cm x 0.6cm",
+    plasticType: "HDPE",
+    plasticOrigin: "Mix de bouchons et couvercles",
+    category: "Maison",
+    productType: "Sous verre",
+    price: 2500,
+    countInStock: 22,
+    rating: 4.6,
+    numReviews: 11,
+    careInstructions: "Lavable en machine à 30°C. Ne pas mettre au micro-ondes.",
+    isNewProduct: true,
+    isFeatured: false,
+    tags: ["chaussons", "bébé", "fait main", "crochet"],
+  },
 ];
 
 export default products;
