@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import axios from "axios";
 import "./ProductScreen.css";
-import products from "../../products";
 import {
   FaStar,
   FaStarHalfAlt,
@@ -16,7 +16,24 @@ import { MdOutlineRecycling } from "react-icons/md";
 
 const ProductScreen = () => {
   const { id } = useParams();
-  const product = products.find((p) => p._id === id);
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const { data } = await axios.get(`/api/products/${id}`);
+        setProduct(data);
+        setLoading(false);
+      } catch (error) {
+        setError("Produit introuvable");
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
 
   // Fonction pour afficher les étoiles
   const renderStars = (rating) => {
@@ -36,7 +53,17 @@ const ProductScreen = () => {
     return stars;
   };
 
-  if (!product) {
+  // Loading
+  if (loading) {
+    return (
+      <div className="product-container">
+        <p>Chargement...</p>
+      </div>
+    );
+  }
+
+  // Erreur ou produit non trouvé
+  if (error || !product) {
     return (
       <div className="product-container">
         <h2>Produit introuvable</h2>

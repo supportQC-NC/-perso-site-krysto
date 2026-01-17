@@ -1,31 +1,26 @@
-import express from 'express';
-import dotenv from 'dotenv';
+import express from "express";
+import dotenv from "dotenv";
 dotenv.config();
-import products from './data/products.js'; // 👈 1. Import manquant
+
+import connectDB from "./config/db.js";
+import productRoutes from "./routes/productRoutes.js";
 
 const PORT = process.env.PORT || 5000;
 
+connectDB();
+
 const app = express();
 
-app.get('/', (req, res) => {
-  res.send('API is running...');
+// Middleware pour parser le JSON
+app.use(express.json());
+
+// Route de base
+app.get("/", (req, res) => {
+  res.send("API Krysto is running...");
 });
 
-app.get('/api/products', (req, res) => {
-  res.json(products); // 👈 2. Syntaxe corrigée
-});
-
-app.get('/api/products/:id', (req, res) => {
-  const product = products.find((p) => p._id === req.params.id);
-    if (product) {
-        res.json(product);
-    } else {
-        res.status(404).json({ message: 'Product not found' });
-    }
-});
-
-
-
+// Routes
+app.use("/api/products", productRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
