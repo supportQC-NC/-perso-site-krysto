@@ -12,15 +12,17 @@ import "./index.css";
 import App from "./App";
 import HomeScreen from "./screens/HomeScreen/HomeScreen";
 import ProductScreen from "./screens/ProductSreen/ProductScreen";
+import CartScreen from "./screens/CartScreen/CartScreen";
 import NotFoundScreen from "./screens/NotFoundScrenn/NotFoundScreen";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
       <Route index={true} path="/" element={<HomeScreen />} />
-      <Route path="/product/:id" element={<ProductScreen />} /> 
-      
-      <Route path="*" element={<NotFoundScreen />} /> 
+      <Route path="/product/:id" element={<ProductScreen />} />
+      <Route path="/cart" element={<CartScreen />} />
+
+      <Route path="*" element={<NotFoundScreen />} />
     </Route>
   )
 );
@@ -31,6 +33,5 @@ root.render(
     <Provider store={store}>
       <RouterProvider router={router} />
     </Provider>
-    
   </React.StrictMode>
 );

@@ -1,7 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import axios from "axios";
+import { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { useGetProductByIdQuery } from "../../slices/productApiSlice";
+import { addToCart } from "../../slices/cartSlice";
+import Loader from "../../components/global/Loader";
+import Message from "../../components/global/Message";
 import "./ProductScreen.css";
+
 import {
   FaStar,
   FaStarHalfAlt,
@@ -11,29 +16,27 @@ import {
   FaLeaf,
   FaCheckCircle,
   FaTimesCircle,
+  FaMinus,
+  FaPlus,
 } from "react-icons/fa";
 import { MdOutlineRecycling } from "react-icons/md";
 
 const ProductScreen = () => {
   const { id } = useParams();
-  const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const { data: product, isLoading, error } = useGetProductByIdQuery(id);
+  const [showLoader, setShowLoader] = useState(true);
+  const [qty, setQty] = useState(1);
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const { data } = await axios.get(`/api/products/${id}`);
-        setProduct(data);
-        setLoading(false);
-      } catch (error) {
-        setError("Produit introuvable");
-        setLoading(false);
-      }
-    };
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 2000);
 
-    fetchProduct();
-  }, [id]);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Fonction pour afficher les étoiles
   const renderStars = (rating) => {
@@ -53,20 +56,38 @@ const ProductScreen = () => {
     return stars;
   };
 
+  // Gérer la quantité
+  const decreaseQty = () => {
+    if (qty > 1) setQty(qty - 1);
+  };
+
+  const increaseQty = () => {
+    if (qty < product.countInStock) setQty(qty + 1);
+  };
+
+  const handleQtyChange = (e) => {
+    const value = Number(e.target.value);
+    if (value >= 1 && value <= product.countInStock) {
+      setQty(value);
+    }
+  };
+
+  // Ajouter au panier
+  const addToCartHandler = () => {
+    dispatch(addToCart({ ...product, qty }));
+    navigate("/cart");
+  };
+
   // Loading
-  if (loading) {
-    return (
-      <div className="product-container">
-        <p>Chargement...</p>
-      </div>
-    );
-  }
+  if (isLoading || showLoader) return <Loader />;
 
   // Erreur ou produit non trouvé
   if (error || !product) {
     return (
       <div className="product-container">
-        <h2>Produit introuvable</h2>
+        <Message variant="error" title="Produit introuvable">
+          {error?.data?.message || "Ce produit n'existe pas ou a été supprimé"}
+        </Message>
         <Link to="/" className="btn-back">
           <FaArrowLeft /> Retour à l'accueil
         </Link>
@@ -83,11 +104,12 @@ const ProductScreen = () => {
       <div className="product-content">
         {/* Image */}
         <div className="product-image">
-          {product.isNew && (
+          {product.isNewProduct && (
             <span className="product-badge">
               <FaLeaf /> Nouveau
             </span>
           )}
+
           <img src={product.image} alt={product.name} />
         </div>
 
@@ -137,10 +159,42 @@ const ProductScreen = () => {
             )}
           </div>
 
+          {/* Sélecteur de quantité */}
+          {product.countInStock > 0 && (
+            <div className="product-qty">
+              <span className="qty-label">Quantité :</span>
+              <div className="qty-selector">
+                <button
+                  className="qty-btn"
+                  onClick={decreaseQty}
+                  disabled={qty <= 1}
+                >
+                  <FaMinus />
+                </button>
+                <input
+                  type="number"
+                  className="qty-input"
+                  value={qty}
+                  onChange={handleQtyChange}
+                  min="1"
+                  max={product.countInStock}
+                />
+                <button
+                  className="qty-btn"
+                  onClick={increaseQty}
+                  disabled={qty >= product.countInStock}
+                >
+                  <FaPlus />
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Bouton panier */}
           <button
             className="btn-add-cart"
             disabled={product.countInStock === 0}
+            onClick={addToCartHandler}
           >
             <FaShoppingCart /> Ajouter au panier
           </button>

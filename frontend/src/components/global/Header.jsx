@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./Header.css";
+import { Link } from "react-router-dom";
 
 const Header = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -15,42 +16,48 @@ const Header = () => {
   return (
     <header className="header">
       <div className="header-container">
-        <a href="/" className="header-logo">
-          <h1>Krysto</h1>
-          <span className="header-tagline">Recyclage plastique</span>
-        </a>
+        <Link to="/" className="header-logo" onClick={closeMenu}>
+          <img
+            src="/images/logo.svg"
+            alt="Krysto"
+            className="header-logo-img"
+          />
+        </Link>
 
         <nav className={`header-nav ${menuOpen ? "active" : ""}`}>
-          <a href="/" onClick={closeMenu}>
+          <Link to="/" onClick={closeMenu}>
             Accueil
-          </a>
-          <a href="/products" onClick={closeMenu}>
+          </Link>
+          <Link to="/products" onClick={closeMenu}>
             Nos produits
-          </a>
-          <a href="/about" onClick={closeMenu}>
+          </Link>
+          <Link to="/about" onClick={closeMenu}>
             Notre démarche
-          </a>
-          <a href="/contact" onClick={closeMenu}>
+          </Link>
+          <Link to="/partners" onClick={closeMenu}>
+            Nos partenaires
+          </Link>
+          <Link to="/contact" onClick={closeMenu}>
             Contact
-          </a>
+          </Link>
 
           <div className="header-actions-mobile">
-            <a href="/cart" className="header-cart" onClick={closeMenu}>
+            <Link to="/cart" className="header-cart" onClick={closeMenu}>
               🛒 Panier
-            </a>
-            <a href="/login" className="header-login" onClick={closeMenu}>
+            </Link>
+            <Link to="/login" className="header-login" onClick={closeMenu}>
               Connexion
-            </a>
+            </Link>
           </div>
         </nav>
 
         <div className="header-actions">
-          <a href="/cart" className="header-cart">
+          <Link to="/cart" className="header-cart">
             🛒 <span>Panier</span>
-          </a>
-          <a href="/login" className="header-login">
+          </Link>
+          <Link to="/login" className="header-login">
             Connexion
-          </a>
+          </Link>
         </div>
 
         <button
