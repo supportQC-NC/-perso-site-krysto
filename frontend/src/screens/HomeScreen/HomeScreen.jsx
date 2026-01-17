@@ -1,23 +1,13 @@
-import { useEffect, useState } from "react";
 import ProductCard from "../../components/ProductCard/ProductCard";
-import axios from "axios";
+import { useGetProductsQuery } from "../../slices/productApiSlice";
+
 import "./HomeScreen.css";
 
 const HomeScreen = () => {
-  const [products, setProducts] = useState([]);
+  const { data: products, isLoading, error } = useGetProductsQuery();
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const { data } = await axios.get("/api/products");
-        setProducts(data);
-      } catch (error) {
-        console.error("Erreur lors de la récupération des produits :", error);
-      }
-    };
-
-    fetchProducts();
-  }, []);
+  if (isLoading) return <div>Chargement...</div>;
+  if (error) return <div>Erreur: {error?.data?.message || error.error}</div>;
 
   return (
     <div className="home-container">
