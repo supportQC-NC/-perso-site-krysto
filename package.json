@@ -1,0 +1,38 @@
+{
+  "name": "site_krysto",
+  "version": "1.0.0",
+  "description": "site krysto backend mern stack",
+  "type": "module",
+  "main": "serveur.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "server": "nodemon backend/server.js",
+    "client": "npm start --prefix frontend",
+    "dev": "concurrently \"npm run server\" \"npm run client\" "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/supportQC-NC/-perso-site-krysto.git"
+  },
+  "keywords": [
+    "recyclage",
+    "npm",
+    "react",
+    "nouvelle-caledonie",
+    "pacifiqu"
+  ],
+  "author": "VELTEN Stoyann - Krysto SARL",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/supportQC-NC/-perso-site-krysto/issues"
+  },
+  "homepage": "https://github.com/supportQC-NC/-perso-site-krysto#readme",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.11"
+  }
+}

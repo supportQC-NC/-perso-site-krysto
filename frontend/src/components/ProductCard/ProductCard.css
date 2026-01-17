@@ -20,6 +20,69 @@
   display: block;
   overflow: hidden;
 }
+/* Badge Nouveau */
+.card-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: linear-gradient(90deg, #2d6a4f, #40916c);
+  color: #fff;
+  padding: 0.3rem 0.6rem;
+  border-radius: 5px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+/* Type plastique */
+.card-plastic {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: #40916c;
+  margin: 0 0 0.5rem 0;
+  font-weight: 500;
+}
+
+/* Footer avec prix + bouton */
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px solid #eee;
+  margin-top: 0.75rem;
+}
+
+.card-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2d6a4f;
+  margin: 0;
+}
+
+.card-btn {
+  background: linear-gradient(90deg, #2d6a4f, #40916c);
+  color: #fff;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(45, 106, 79, 0.4);
+}
+
+/* Position relative pour le badge */
+.card {
+  position: relative;
+}
 
 .card > a img {
   width: 100%;
@@ -117,4 +180,24 @@
   .card_body p {
     font-size: 1rem;
   }
+}
+
+/* Rating étoiles */
+.card-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.card-stars {
+  display: flex;
+  gap: 0.1rem;
+  color: #f4b400;
+  font-size: 0.9rem;
+}
+
+.card-reviews {
+  font-size: 0.8rem;
+  color: #6c757d;
 }

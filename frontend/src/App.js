@@ -1,18 +1,20 @@
-import React from 'react'
-import HomeScreen from './screens/HomeScreen'
-import Header from './components/global/Header'
-import Footer from './components/global/Footer'
+import React from "react";
+import Header from "./components/global/Header";
+import Footer from "./components/global/Footer";
+import { Outlet } from "react-router-dom";
 
 const App = () => {
   return (
     <>
-   <Header/>
-    <main>
-      <HomeScreen/>
-    </main>
-<Footer/>
+      <Header />
+      <main>
+        <div className="container">
+          <Outlet />
+        </div>
+      </main>
+      <Footer />
     </>
-  )
-}
+  );
+};
 
-export default App
+export default App;

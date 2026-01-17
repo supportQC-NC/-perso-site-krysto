@@ -1,0 +1,19 @@
+/* Rating étoiles */
+.card-rating {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.card-stars {
+  display: flex;
+  gap: 0.1rem;
+  color: #f4b400;
+  font-size: 0.9rem;
+}
+
+.card-reviews {
+  font-size: 0.8rem;
+  color: #6c757d;
+}

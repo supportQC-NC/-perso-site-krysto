@@ -1,5 +1,5 @@
-import ProductCard from "../components/ProductCard";
-import products from "../products";
+import ProductCard from "../../components/ProductCard/ProductCard";
+import products from "../../products";
 import "./HomeScreen.css";
 
 const HomeScreen = () => {
