@@ -3,6 +3,8 @@ import "./Footer.css";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="footer">
       <div className="footer-container">
@@ -35,20 +37,43 @@ const Footer = () => {
         <div className="footer-section">
           <h4>Suivez-nous</h4>
           <div className="footer-socials">
-            <Link to="#" aria-label="Facebook">
+            <a
+              href="https://facebook.com/krysto.nc"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook"
+            >
               FB
-            </Link>
-            <Link to="#" aria-label="Instagram">
+            </a>
+            <a
+              href="https://instagram.com/krysto.nc"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+            >
               IG
-            </Link>
+            </a>
           </div>
         </div>
       </div>
 
+      {/* Section légale RGPD */}
+      <div className="footer-legal">
+        <nav className="footer-legal-nav">
+          <Link to="/mentions-legales">Mentions légales</Link>
+          <Link to="/politique-confidentialite">
+            Politique de confidentialité
+          </Link>
+          <Link to="/politique-cookies">Gestion des cookies</Link>
+          <Link to="/cgv">Conditions générales de vente</Link>
+          <Link to="/cgu">Conditions générales d'utilisation</Link>
+        </nav>
+      </div>
+
       <div className="footer-bottom">
         <p>
-          &copy; 2025 Krysto - Recyclage plastique artisanal. Tous droits
-          réservés.
+          &copy; {currentYear} Krysto - Recyclage plastique artisanal. Tous
+          droits réservés.
         </p>
       </div>
     </footer>

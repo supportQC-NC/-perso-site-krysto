@@ -3,7 +3,7 @@ import Loader from "../../components/global/Loader";
 import ProductCard from "../../components/ProductCard/ProductCard";
 import { useGetProductsQuery } from "../../slices/productApiSlice";
 
-import "./HomeScreen.css";
+import "./ProductScreen.css";
 
 const HomeScreen = () => {
   const { data: products, isLoading, error } = useGetProductsQuery();

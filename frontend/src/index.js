@@ -10,7 +10,8 @@ import { Provider } from "react-redux";
 import store from "./store";
 import "./index.css";
 import App from "./App";
-import HomeScreen from "./screens/HomeScreen/HomeScreen";
+
+import ProductsScreen from "./screens/ProductsScreen/Products.jsx";
 import ProductScreen from "./screens/ProductSreen/ProductScreen";
 import CartScreen from "./screens/CartScreen/CartScreen";
 import NotFoundScreen from "./screens/NotFoundScrenn/NotFoundScreen";
@@ -31,17 +32,39 @@ import AdminLayout from "./screens/admin/AdminSidebar/AdminLayout";
 import AdminUsersScreen from "./screens/admin/AdminUsersScreen";
 import AdminOrdersScreen from "./screens/admin/AdminOrdersScreen";
 import AdminOrderDetailScreen from "./screens/admin/AdminOrderDetailsScreen";
+import AdminProductScreen from "./screens/admin/AdminProductsScreen";
+import AdminProductDetailsScreen from "./screens/admin/AdminProductDetailsScreen";
+import MentionsLegalesScreen from "./screens/legal/MentionsLegalesScreen";
+import PolitiqueConfidentialiteScreen from "./screens/legal/PolitiqueConfidentialiteScreen";
+import PolitiqueCookiesScreen from "./screens/legal/PolitiqueCookiesScreen";
+import CGVScreen from "./screens/legal/CGVScreen";
+import CGUScreen from "./screens/legal/CGUScreen";
+import LandingPage from "./screens/LandingPage/LandingPage.jsx";
+import AboutScreen from "./screens/AboutScreen/AboutScreen.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<App />}>
-      <Route index={true} path="/" element={<HomeScreen />} />
+      <Route index={true} path="/" element={<LandingPage />} />
+
       <Route path="/register" element={<RegisterScreen />} />
       <Route path="/login" element={<LoginScreen />} />
+      <Route path="/products" element={<ProductsScreen />} />
       <Route path="/product/:id" element={<ProductScreen />} />
       <Route path="/cart" element={<CartScreen />} />
       <Route path="/partners" element={<PartnersScreen />} />
       <Route path="/contact" element={<ContactScreen />} />
+
+<Route path="/about" element={<AboutScreen />} />
+
+      <Route path="/mentions-legales" element={<MentionsLegalesScreen />} />
+      <Route
+        path="/politique-confidentialite"
+        element={<PolitiqueConfidentialiteScreen />}
+      />
+      <Route path="/politique-cookies" element={<PolitiqueCookiesScreen />} />
+      <Route path="/cgv" element={<CGVScreen />} />
+      <Route path="/cgu" element={<CGUScreen />} />
 
       {/* Route privée */}
       <Route path="" element={<PrivateRoute />}>
@@ -59,6 +82,15 @@ const router = createBrowserRouter(
           <Route path="users" element={<AdminUsersScreen />} />
 
           <Route path="orders" element={<AdminOrdersScreen />} />
+          <Route path="/admin/products" element={<AdminProductScreen />} />
+          <Route
+            path="/admin/products/create"
+            element={<AdminProductDetailsScreen />}
+          />
+          <Route
+            path="/admin/products/:id"
+            element={<AdminProductDetailsScreen />}
+          />
           <Route path="orders/:id" element={<AdminOrderDetailScreen />} />
         </Route>
       </Route>
