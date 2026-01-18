@@ -1,10 +1,119 @@
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useGetActiveUniversesQuery } from "../../slices/universeApiSlice";
+import { useSubscribeNewsletterMutation } from "../../slices/prospectApiSlice";
 import "./LandingPage.css";
+
+// Données statiques en dehors du composant pour éviter les re-renders
+const testimonials = [
+  {
+    name: "Marie L.",
+    location: "Nouméa",
+    text: "Des produits magnifiques et une démarche qui a du sens. Mon cache-pot est unique, je suis fière de contribuer au recyclage local !",
+    rating: 5,
+  },
+  {
+    name: "Jean-Pierre D.",
+    location: "Dumbéa",
+    text: "Qualité exceptionnelle ! On ne dirait jamais que c'est fait à partir de plastique recyclé. Bravo pour cette initiative.",
+    rating: 5,
+  },
+  {
+    name: "Sophie M.",
+    location: "Païta",
+    text: "J'ai offert un coffret à ma mère, elle a adoré. Les couleurs sont superbes et le concept est génial.",
+    rating: 5,
+  },
+];
+
+const stats = [
+  { number: "5+", label: "Tonnes de plastique recyclé", icon: "♻️" },
+  { number: "2000+", label: "Produits créés", icon: "🎨" },
+  { number: "100%", label: "Made in NC", icon: "🇳🇨" },
+  { number: "0", label: "Déchet produit", icon: "🌿" },
+];
+
+const processSteps = [
+  {
+    step: "01",
+    title: "Collecte",
+    description:
+      "Récupération des déchets plastiques locaux (bouteilles, bouchons, emballages)",
+    icon: "🗑️",
+  },
+  {
+    step: "02",
+    title: "Tri & Nettoyage",
+    description:
+      "Tri par type de plastique et nettoyage minutieux pour garantir la qualité",
+    icon: "🧹",
+  },
+  {
+    step: "03",
+    title: "Broyage",
+    description:
+      "Transformation en paillettes de plastique prêtes à être travaillées",
+    icon: "⚙️",
+  },
+  {
+    step: "04",
+    title: "Création",
+    description: "Moulage artisanal et création de pièces uniques avec amour",
+    icon: "✨",
+  },
+];
+
+const featuredProducts = [
+  {
+    name: "Cache-pot Lagon",
+    price: "3 500 XPF",
+    image: "/images/products/cache-pot.jpg",
+    tag: "Bestseller",
+  },
+  {
+    name: "Dessous de verre Corail",
+    price: "1 200 XPF",
+    image: "/images/products/dessous-verre.jpg",
+    tag: "Nouveau",
+  },
+  {
+    name: "Porte-savon Vague",
+    price: "1 800 XPF",
+    image: "/images/products/porte-savon.jpg",
+    tag: "Éco-favori",
+  },
+  {
+    name: "Vase Océan",
+    price: "4 200 XPF",
+    image: "/images/products/vase.jpg",
+    tag: "Édition limitée",
+  },
+];
 
 const LandingPage = () => {
   const [isVisible, setIsVisible] = useState({});
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [currentUniverse, setCurrentUniverse] = useState(0);
+  const universeCarouselRef = useRef(null);
+  const navigate = useNavigate();
+
+  // Newsletter state
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [newsletterSuccess, setNewsletterSuccess] = useState(false);
+
+  // Fetch universes
+  const { data: universesData, isLoading: universesLoading } =
+    useGetActiveUniversesQuery();
+
+  // Newsletter mutation
+  const [subscribeNewsletter, { isLoading: isSubscribing }] =
+    useSubscribeNewsletterMutation();
+
+  // Extraire les univers - gérer différentes structures de réponse
+  const universes = Array.isArray(universesData)
+    ? universesData
+    : universesData?.universes || universesData?.data || [];
 
   // Animation on scroll
   useEffect(() => {
@@ -34,90 +143,89 @@ const LandingPage = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const testimonials = [
-    {
-      name: "Marie L.",
-      location: "Nouméa",
-      text: "Des produits magnifiques et une démarche qui a du sens. Mon cache-pot est unique, je suis fière de contribuer au recyclage local !",
-      rating: 5,
-    },
-    {
-      name: "Jean-Pierre D.",
-      location: "Dumbéa",
-      text: "Qualité exceptionnelle ! On ne dirait jamais que c'est fait à partir de plastique recyclé. Bravo pour cette initiative.",
-      rating: 5,
-    },
-    {
-      name: "Sophie M.",
-      location: "Païta",
-      text: "J'ai offert un coffret à ma mère, elle a adoré. Les couleurs sont superbes et le concept est génial.",
-      rating: 5,
-    },
-  ];
+  // Auto-rotate universes
+  useEffect(() => {
+    if (universes.length === 0) return;
+    const interval = setInterval(() => {
+      setCurrentUniverse((prev) => (prev + 1) % universes.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [universes.length]);
 
-  const stats = [
-    { number: "5+", label: "Tonnes de plastique recyclé", icon: "♻️" },
-    { number: "2000+", label: "Produits créés", icon: "🎨" },
-    { number: "100%", label: "Made in NC", icon: "🇳🇨" },
-    { number: "0", label: "Déchet produit", icon: "🌿" },
-  ];
+  // Scroll universe carousel
+  const scrollUniverse = (direction) => {
+    if (universes.length === 0) return;
+    if (direction === "next") {
+      setCurrentUniverse((prev) => (prev + 1) % universes.length);
+    } else {
+      setCurrentUniverse(
+        (prev) => (prev - 1 + universes.length) % universes.length,
+      );
+    }
+  };
 
-  const process = [
-    {
-      step: "01",
-      title: "Collecte",
-      description:
-        "Récupération des déchets plastiques locaux (bouteilles, bouchons, emballages)",
-      icon: "🗑️",
-    },
-    {
-      step: "02",
-      title: "Tri & Nettoyage",
-      description:
-        "Tri par type de plastique et nettoyage minutieux pour garantir la qualité",
-      icon: "🧹",
-    },
-    {
-      step: "03",
-      title: "Broyage",
-      description:
-        "Transformation en paillettes de plastique prêtes à être travaillées",
-      icon: "⚙️",
-    },
-    {
-      step: "04",
-      title: "Création",
-      description: "Moulage artisanal et création de pièces uniques avec amour",
-      icon: "✨",
-    },
-  ];
+  const handleUniverseClick = (universe) => {
+    navigate(`/universes/${universe.slug || universe._id}`);
+  };
 
-  const products = [
-    {
-      name: "Cache-pot Lagon",
-      price: "3 500 XPF",
-      image: "/images/products/cache-pot.jpg",
-      tag: "Bestseller",
-    },
-    {
-      name: "Dessous de verre Corail",
-      price: "1 200 XPF",
-      image: "/images/products/dessous-verre.jpg",
-      tag: "Nouveau",
-    },
-    {
-      name: "Porte-savon Vague",
-      price: "1 800 XPF",
-      image: "/images/products/porte-savon.jpg",
-      tag: "Éco-favori",
-    },
-    {
-      name: "Vase Océan",
-      price: "4 200 XPF",
-      image: "/images/products/vase.jpg",
-      tag: "Édition limitée",
-    },
-  ];
+  // Newsletter submit handler
+  const handleNewsletterSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!newsletterEmail) {
+      toast.error("Veuillez entrer votre adresse email");
+      return;
+    }
+
+    // Validation email simple
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newsletterEmail)) {
+      toast.error("Veuillez entrer une adresse email valide");
+      return;
+    }
+
+    try {
+      await subscribeNewsletter({
+        email: newsletterEmail,
+        source: "landing_page",
+      }).unwrap();
+
+      setNewsletterSuccess(true);
+      setNewsletterEmail("");
+      toast.success("🎉 Bienvenue dans la communauté Krysto !");
+
+      // Reset success message after 5 seconds
+      setTimeout(() => {
+        setNewsletterSuccess(false);
+      }, 5000);
+    } catch (err) {
+      const errorMessage =
+        err?.data?.message || "Une erreur est survenue. Veuillez réessayer.";
+      toast.error(errorMessage);
+    }
+  };
+
+  // Déterminer la position d'une carte dans le carrousel
+  const getCardPosition = (index) => {
+    if (universes.length === 0) return "hidden";
+    if (universes.length === 1) return index === 0 ? "active" : "hidden";
+
+    if (index === currentUniverse) {
+      return "active";
+    }
+
+    const prevIndex =
+      (currentUniverse - 1 + universes.length) % universes.length;
+    const nextIndex = (currentUniverse + 1) % universes.length;
+
+    if (index === prevIndex) {
+      return "prev";
+    }
+    if (index === nextIndex) {
+      return "next";
+    }
+    return "hidden";
+  };
 
   return (
     <div className="landing-page">
@@ -173,6 +281,122 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Universes Section */}
+      <section
+        id="universes"
+        className={`universes-section animate-section ${isVisible["universes"] ? "visible" : ""}`}
+      >
+        <div className="container">
+          <div className="section-header">
+            <span className="section-tag">Nos univers</span>
+            <h2>Explorez nos collections</h2>
+            <p>
+              Chaque univers raconte une histoire unique, inspirée par la beauté
+              de notre île
+            </p>
+          </div>
+
+          {universesLoading ? (
+            <div className="universes-loading">
+              <div className="loading-spinner"></div>
+              <span>Chargement des univers...</span>
+            </div>
+          ) : universes.length === 0 ? (
+            <div className="universes-empty-state">
+              <span className="universes-empty-icon">🌌</span>
+              <p>Nos univers arrivent bientôt !</p>
+            </div>
+          ) : (
+            <>
+              <div className="universes-carousel-container">
+                {universes.length > 1 && (
+                  <button
+                    className="carousel-btn carousel-btn--prev"
+                    onClick={() => scrollUniverse("prev")}
+                    aria-label="Univers précédent"
+                  >
+                    ‹
+                  </button>
+                )}
+
+                <div className="universes-carousel" ref={universeCarouselRef}>
+                  {universes.map((universe, index) => {
+                    const position = getCardPosition(index);
+
+                    return (
+                      <div
+                        key={universe._id}
+                        className={`universe-carousel-card ${position}`}
+                        onClick={() =>
+                          position === "active" && handleUniverseClick(universe)
+                        }
+                      >
+                        <div className="universe-carousel-card__image">
+                          {universe.image ? (
+                            <img src={universe.image} alt={universe.name} />
+                          ) : (
+                            <div className="universe-carousel-card__placeholder">
+                              <span>🌌</span>
+                            </div>
+                          )}
+                          <div className="universe-carousel-card__overlay">
+                            <span className="universe-carousel-card__explore">
+                              Explorer l'univers →
+                            </span>
+                          </div>
+                        </div>
+                        <div className="universe-carousel-card__content">
+                          <h3>{universe.name}</h3>
+                          {universe.description && (
+                            <p>{universe.description}</p>
+                          )}
+                          {universe.productCount !== undefined && (
+                            <span className="universe-carousel-card__count">
+                              {universe.productCount} produit
+                              {universe.productCount > 1 ? "s" : ""}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {universes.length > 1 && (
+                  <button
+                    className="carousel-btn carousel-btn--next"
+                    onClick={() => scrollUniverse("next")}
+                    aria-label="Univers suivant"
+                  >
+                    ›
+                  </button>
+                )}
+              </div>
+
+              {universes.length > 1 && (
+                <div className="universes-carousel-dots">
+                  {universes.map((_, index) => (
+                    <button
+                      key={index}
+                      className={`dot ${index === currentUniverse ? "active" : ""}`}
+                      onClick={() => setCurrentUniverse(index)}
+                      aria-label={`Univers ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          <div className="universes-cta">
+            <Link to="/universes" className="btn-secondary">
+              Voir tous les univers
+              <span className="btn-arrow">→</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Problem/Solution Section */}
       <section
         id="problem"
@@ -220,7 +444,7 @@ const LandingPage = () => {
           </div>
 
           <div className="process-timeline">
-            {process.map((item, index) => (
+            {processSteps.map((item, index) => (
               <div
                 key={index}
                 className="process-step"
@@ -230,7 +454,7 @@ const LandingPage = () => {
                 <div className="step-icon">{item.icon}</div>
                 <h3>{item.title}</h3>
                 <p>{item.description}</p>
-                {index < process.length - 1 && (
+                {index < processSteps.length - 1 && (
                   <div className="step-connector"></div>
                 )}
               </div>
@@ -254,7 +478,7 @@ const LandingPage = () => {
           </div>
 
           <div className="products-grid">
-            {products.map((product, index) => (
+            {featuredProducts.map((product, index) => (
               <div
                 key={index}
                 className="product-card"
@@ -414,15 +638,45 @@ const LandingPage = () => {
                 pour un mode de vie plus éco-responsable.
               </p>
             </div>
-            <form
-              className="newsletter-form"
-              onSubmit={(e) => e.preventDefault()}
-            >
-              <input type="email" placeholder="Votre adresse email" required />
-              <button type="submit" className="btn-primary">
-                S'inscrire
-              </button>
-            </form>
+
+            {newsletterSuccess ? (
+              <div className="newsletter-success">
+                <span className="newsletter-success-icon">🎉</span>
+                <p>Merci pour votre inscription !</p>
+                <span className="newsletter-success-text">
+                  Vous recevrez bientôt nos actualités.
+                </span>
+              </div>
+            ) : (
+              <form
+                className="newsletter-form"
+                onSubmit={handleNewsletterSubmit}
+              >
+                <input
+                  type="email"
+                  placeholder="Votre adresse email"
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  disabled={isSubscribing}
+                  required
+                />
+                <button
+                  type="submit"
+                  className="btn-primary"
+                  disabled={isSubscribing}
+                >
+                  {isSubscribing ? (
+                    <>
+                      <span className="btn-spinner"></span>
+                      Inscription...
+                    </>
+                  ) : (
+                    "S'inscrire"
+                  )}
+                </button>
+              </form>
+            )}
+
             <p className="newsletter-privacy">
               🔒 Vos données sont protégées.{" "}
               <Link to="/politique-confidentialite">En savoir plus</Link>

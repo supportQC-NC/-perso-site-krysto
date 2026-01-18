@@ -154,3 +154,97 @@ export const orderConfirmationTemplate = (order) => {
     </html>
   `;
 };
+
+// NOUVEAU: Template email de bienvenue newsletter (pour les prospects)
+export const newsletterWelcomeTemplate = (email) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa;">
+      <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <div style="background: linear-gradient(135deg, #088395, #05bfdb); padding: 40px; border-radius: 16px 16px 0 0; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 28px;">Bienvenue dans notre newsletter ! 📬</h1>
+        </div>
+        <div style="background: #ffffff; padding: 40px; border-radius: 0 0 16px 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+          <p style="font-size: 16px; color: #333; line-height: 1.6;">
+            Bonjour !
+          </p>
+          <p style="font-size: 16px; color: #333; line-height: 1.6;">
+            Merci de vous être inscrit à la newsletter Krysto ! Vous recevrez désormais :
+          </p>
+          <ul style="font-size: 16px; color: #333; line-height: 1.8;">
+            <li>🌿 Nos dernières créations éco-responsables</li>
+            <li>🎁 Des offres exclusives et promotions</li>
+            <li>♻️ Des conseils pour un mode de vie durable</li>
+            <li>📖 Les coulisses de notre atelier en Nouvelle-Calédonie</li>
+          </ul>
+          
+          <div style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); padding: 20px; border-radius: 12px; margin: 25px 0; text-align: center;">
+            <p style="margin: 0; font-size: 15px; color: #2d6a4f;">
+              🌊 <strong>Saviez-vous ?</strong><br>
+              Chaque produit Krysto permet de recycler en moyenne 50 bouchons plastiques collectés sur nos plages.
+            </p>
+          </div>
+
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/products" 
+               style="background: linear-gradient(90deg, #2d6a4f, #40916c); color: #ffffff; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
+              Découvrir nos produits
+            </a>
+          </div>
+
+          <p style="font-size: 14px; color: #6c757d; line-height: 1.6; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e9ecef;">
+            Vous pouvez vous désinscrire à tout moment en cliquant sur le lien en bas de nos emails.<br><br>
+            À très bientôt !<br>
+            L'équipe Krysto 🌱
+          </p>
+          
+          <div style="text-align: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e9ecef;">
+            <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/unsubscribe?email=${encodeURIComponent(email)}" 
+               style="font-size: 12px; color: #6c757d; text-decoration: underline;">
+              Se désinscrire de la newsletter
+            </a>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};
+
+// Template email pour newsletter générique
+export const newsletterTemplate = (content, email) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa;">
+      <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+        <div style="background: linear-gradient(135deg, #2d6a4f, #40916c); padding: 30px; border-radius: 16px 16px 0 0; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Krysto Newsletter 🌿</h1>
+        </div>
+        <div style="background: #ffffff; padding: 40px; border-radius: 0 0 16px 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+          ${content}
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e9ecef;">
+            <p style="font-size: 12px; color: #6c757d; margin-bottom: 10px;">
+              Vous recevez cet email car vous êtes inscrit à notre newsletter.
+            </p>
+            <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/unsubscribe?email=${encodeURIComponent(email)}" 
+               style="font-size: 12px; color: #6c757d; text-decoration: underline;">
+              Se désinscrire
+            </a>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+};

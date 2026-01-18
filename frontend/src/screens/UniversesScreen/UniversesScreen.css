@@ -1,0 +1,126 @@
+/* UniversesScreen.css */
+
+.universes-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.universes-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.universes-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin: 0 0 1rem 0;
+  position: relative;
+  display: inline-block;
+}
+
+.universes-title::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, #2d6a4f, #40916c, #52b788);
+  border-radius: 2px;
+}
+
+.universes-subtitle {
+  font-size: 1.1rem;
+  color: #6b7280;
+  margin: 1.5rem auto 0;
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+.universes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  justify-items: center;
+}
+
+.universes-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: #f8f9fa;
+  border-radius: 16px;
+  margin-top: 2rem;
+}
+
+.universes-empty__icon {
+  font-size: 4rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.universes-empty p {
+  font-size: 1.1rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.error-message {
+  text-align: center;
+  padding: 2rem;
+  color: #dc2626;
+  background: #fef2f2;
+  border-radius: 12px;
+  margin: 2rem auto;
+  max-width: 600px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .universes-container {
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  .universes-header {
+    margin-bottom: 2rem;
+  }
+
+  .universes-title {
+    font-size: 2rem;
+  }
+
+  .universes-subtitle {
+    font-size: 1rem;
+  }
+
+  .universes-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .universes-container {
+    padding: 1rem 0.75rem 2rem;
+  }
+
+  .universes-title {
+    font-size: 1.75rem;
+  }
+
+  .universes-subtitle {
+    font-size: 0.95rem;
+    margin-top: 1rem;
+  }
+
+  .universes-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .universes-empty {
+    padding: 3rem 1.5rem;
+  }
+}

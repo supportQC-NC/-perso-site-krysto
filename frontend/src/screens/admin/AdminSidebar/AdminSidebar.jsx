@@ -1,9 +1,13 @@
 import { NavLink } from "react-router-dom";
 import { useGetContactStatsQuery } from "../../../slices/contactApiSlice";
+import { useGetProspectStatsQuery } from "../../../slices/prospectApiSlice";
+import { useGetMailingStatsQuery } from "../../../slices/mailingApiSlice";
 import "./AdminSidebar.css";
 
 const AdminSidebar = () => {
   const { data: contactStats } = useGetContactStatsQuery();
+  const { data: prospectStats } = useGetProspectStatsQuery();
+  const { data: mailingStats } = useGetMailingStatsQuery();
 
   const menuItems = [
     {
@@ -23,14 +27,31 @@ const AdminSidebar = () => {
       label: "Produits",
     },
     {
-      path: "/admin/categories",
-      icon: "🏷️",
-      label: "Catégories",
+      path: "/admin/universes",
+      icon: "🌍",
+      label: "Univers",
+    },
+    {
+      path: "/admin/subuniverses",
+      icon: "📂",
+      label: "Sous-Univers",
     },
     {
       path: "/admin/users",
       icon: "👥",
       label: "Utilisateurs",
+    },
+    {
+      path: "/admin/prospects",
+      icon: "📧",
+      label: "Newsletter",
+      badge: prospectStats?.active || 0,
+    },
+    {
+      path: "/admin/mailing",
+      icon: "✉️",
+      label: "Campagnes",
+      badge: mailingStats?.draftCampaigns || 0,
     },
     {
       path: "/admin/contacts",

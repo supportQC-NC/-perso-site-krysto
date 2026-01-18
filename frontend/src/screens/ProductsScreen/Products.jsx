@@ -6,8 +6,11 @@ import { useGetProductsQuery } from "../../slices/productApiSlice";
 import "./ProductScreen.css";
 
 const HomeScreen = () => {
-  const { data: products, isLoading, error } = useGetProductsQuery();
+  const { data, isLoading, error } = useGetProductsQuery();
   const [showLoader, setShowLoader] = useState(true);
+
+  // Extraire les produits de la réponse (qui contient maintenant { products, page, pages, total })
+  const products = data?.products || [];
 
   useEffect(() => {
     const timer = setTimeout(() => {

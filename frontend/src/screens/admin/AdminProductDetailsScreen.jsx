@@ -8,6 +8,8 @@ import {
   useUploadProductImageMutation,
   useCreateProductMutation,
 } from "../../slices/productApiSlice";
+import { useGetUniversesQuery } from "../../slices/universeApiSlice";
+import { useGetSubUniversesByUniverseQuery } from "../../slices/subuniverseApiSlice";
 import FormInput from "../../components/Form/FormInput";
 import FormTextarea from "../../components/Form/FormTextarea";
 import FormSelect from "../../components/Form/FormSelect";
@@ -26,6 +28,8 @@ const AdminProductDetailsScreen = () => {
     error,
     refetch,
   } = useGetProductByIdQuery(id, { skip: !isEditMode });
+
+  const { data: universes } = useGetUniversesQuery();
 
   const [createProduct, { isLoading: isCreating }] = useCreateProductMutation();
   const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
@@ -46,6 +50,8 @@ const AdminProductDetailsScreen = () => {
     plasticOrigin: "",
     category: "Maison",
     productType: "Cache-pot",
+    universe: "",
+    subUniverse: "", // NOUVEAU
     price: "",
     salePrice: "",
     countInStock: 0,
@@ -57,6 +63,13 @@ const AdminProductDetailsScreen = () => {
   });
 
   const [previewImage, setPreviewImage] = useState("");
+
+  // NOUVEAU: Charger les sous-univers en fonction de l'univers sélectionné
+  const { data: subUniversesData, isLoading: isLoadingSubUniverses } =
+    useGetSubUniversesByUniverseQuery(
+      { universeId: formData.universe },
+      { skip: !formData.universe },
+    );
 
   useEffect(() => {
     if (product && isEditMode) {
@@ -73,6 +86,8 @@ const AdminProductDetailsScreen = () => {
         plasticOrigin: product.plasticOrigin || "",
         category: product.category || "Maison",
         productType: product.productType || "Cache-pot",
+        universe: product.universe?._id || product.universe || "",
+        subUniverse: product.subUniverse?._id || product.subUniverse || "", // NOUVEAU
         price: product.price || "",
         salePrice: product.salePrice || "",
         countInStock: product.countInStock || 0,
@@ -92,6 +107,15 @@ const AdminProductDetailsScreen = () => {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+
+    // NOUVEAU: Réinitialiser le sous-univers si l'univers change
+    if (name === "universe") {
+      setFormData((prev) => ({
+        ...prev,
+        universe: value,
+        subUniverse: "", // Reset du sous-univers
+      }));
+    }
   };
 
   const handleImageUpload = async (e) => {
@@ -119,6 +143,8 @@ const AdminProductDetailsScreen = () => {
       price: Number(formData.price),
       salePrice: formData.salePrice ? Number(formData.salePrice) : null,
       countInStock: Number(formData.countInStock),
+      universe: formData.universe || null,
+      subUniverse: formData.subUniverse || null, // NOUVEAU
       tags: formData.tags
         .split(",")
         .map((tag) => tag.trim())
@@ -187,6 +213,20 @@ const AdminProductDetailsScreen = () => {
     { value: "draft", label: "📝 Brouillon" },
     { value: "active", label: "✅ Actif" },
     { value: "archived", label: "📁 Archivé" },
+  ];
+
+  const universeOptions = [
+    { value: "", label: "-- Aucun univers --" },
+    ...(universes?.map((u) => ({ value: u._id, label: `🌍 ${u.name}` })) || []),
+  ];
+
+  // NOUVEAU: Options des sous-univers
+  const subUniverseOptions = [
+    { value: "", label: "-- Aucun sous-univers --" },
+    ...(subUniversesData?.subUniverses?.map((su) => ({
+      value: su._id,
+      label: `📂 ${su.name}`,
+    })) || []),
   ];
 
   if (isLoading && isEditMode) return <Loader />;
@@ -283,12 +323,47 @@ const AdminProductDetailsScreen = () => {
               </div>
             </div>
 
-            {/* Catégorie et Type */}
+            {/* Univers, Sous-univers et Catégorie */}
             <div className="detail-card">
               <div className="detail-card-header">
-                <h2>🏷️ Catégorisation</h2>
+                <h2>🌍 Univers et Catégorie</h2>
               </div>
               <div className="detail-card-content">
+                {/* NOUVEAU: Section Univers et Sous-univers */}
+                <div className="universe-section">
+                  <div className="form-row">
+                    <FormSelect
+                      label="Univers"
+                      name="universe"
+                      value={formData.universe}
+                      onChange={handleChange}
+                      options={universeOptions}
+                    />
+                    <FormSelect
+                      label="Sous-univers"
+                      name="subUniverse"
+                      value={formData.subUniverse}
+                      onChange={handleChange}
+                      options={subUniverseOptions}
+                      disabled={!formData.universe || isLoadingSubUniverses}
+                    />
+                  </div>
+                  {formData.universe &&
+                    !formData.subUniverse &&
+                    subUniversesData?.subUniverses?.length > 0 && (
+                      <p className="hint-text">
+                        💡 Sélectionnez un sous-univers pour mieux catégoriser
+                        votre produit
+                      </p>
+                    )}
+                  {formData.universe &&
+                    subUniversesData?.subUniverses?.length === 0 && (
+                      <p className="hint-text warning">
+                        ⚠️ Cet univers n'a pas encore de sous-univers
+                      </p>
+                    )}
+                </div>
+
                 <div className="form-row">
                   <FormSelect
                     label="Catégorie *"
@@ -561,6 +636,19 @@ const AdminProductDetailsScreen = () => {
                     <div className="info-row">
                       <span className="info-label">Slug</span>
                       <span className="info-value">{product.slug}</span>
+                    </div>
+                    <div className="info-row">
+                      <span className="info-label">Univers</span>
+                      <span className="info-value">
+                        {product.universe?.name || "Aucun"}
+                      </span>
+                    </div>
+                    {/* NOUVEAU: Afficher le sous-univers */}
+                    <div className="info-row">
+                      <span className="info-label">Sous-univers</span>
+                      <span className="info-value">
+                        {product.subUniverse?.name || "Aucun"}
+                      </span>
                     </div>
                     <div className="info-row">
                       <span className="info-label">Créé le</span>

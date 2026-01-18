@@ -12,6 +12,8 @@ const products = [
     plasticOrigin: "Bouchons de bouteilles",
     category: "Maison",
     productType: "Cache-pot",
+    universe: "Maison & Déco",
+    subUniverse: "Plantes & Jardin", // NOUVEAU
     price: 1800,
     countInStock: 25,
     rating: 4.8,
@@ -35,6 +37,8 @@ const products = [
     plasticOrigin: "Pots de yaourt et barquettes alimentaires",
     category: "Maison",
     productType: "Sous-verre",
+    universe: "Maison & Déco",
+    subUniverse: "Arts de la table", // NOUVEAU
     price: 1200,
     countInStock: 40,
     rating: 4.6,
@@ -57,6 +61,8 @@ const products = [
     plasticOrigin: "Bouteilles de lessive",
     category: "Salle de bain",
     productType: "Peigne",
+    universe: "Salle de bain",
+    subUniverse: "Soins capillaires", // NOUVEAU
     price: 900,
     countInStock: 60,
     rating: 4.9,
@@ -79,6 +85,8 @@ const products = [
     plasticOrigin: "Mix bouteilles et bouchons",
     category: "Salle de bain",
     productType: "Pack Salle de bain",
+    universe: "Salle de bain",
+    subUniverse: "Accessoires de bain", // NOUVEAU
     price: 3500,
     countInStock: 15,
     rating: 4.7,
@@ -101,6 +109,8 @@ const products = [
     plasticOrigin: "Bouchons collectés sur les plages",
     category: "Accessoires",
     productType: "Lunettes",
+    universe: "Accessoires Mode",
+    subUniverse: "Lunetterie", // NOUVEAU
     price: 4500,
     countInStock: 20,
     rating: 4.5,
@@ -124,6 +134,8 @@ const products = [
     plasticOrigin: "Bouchons de bouteilles",
     category: "Jeux",
     productType: "Jeu de société",
+    universe: "Jeux & Loisirs",
+    subUniverse: "Jeux de société", // NOUVEAU
     price: 5500,
     countInStock: 12,
     rating: 4.9,
@@ -146,6 +158,8 @@ const products = [
     plasticOrigin: "Emballages alimentaires",
     category: "Bureau",
     productType: "Stylo",
+    universe: "Bureau",
+    subUniverse: "Écriture", // NOUVEAU
     price: 1500,
     countInStock: 100,
     rating: 4.3,
@@ -168,6 +182,8 @@ const products = [
     plasticOrigin: "Bouchons triés par couleur",
     category: "Bijoux",
     productType: "Bague",
+    universe: "Bijoux",
+    subUniverse: "Bagues & Bracelets", // NOUVEAU
     price: 2200,
     countInStock: 30,
     rating: 4.8,
@@ -191,6 +207,8 @@ const products = [
     plasticOrigin: "Bouteilles de lait",
     category: "Maison",
     productType: "Cache-pot",
+    universe: "Maison & Déco",
+    subUniverse: "Plantes & Jardin", // NOUVEAU
     price: 2000,
     countInStock: 18,
     rating: 4.7,
@@ -214,6 +232,8 @@ const products = [
     plasticOrigin: "Collecte spéciale bouchons",
     category: "Coffrets",
     productType: "Coffret cadeau",
+    universe: "Coffrets Cadeaux",
+    subUniverse: "Coffrets thématiques", // NOUVEAU
     price: 4800,
     countInStock: 8,
     rating: 5.0,
@@ -236,6 +256,8 @@ const products = [
     plasticOrigin: "Mix de bouchons et couvercles",
     category: "Maison",
     productType: "Sous-verre",
+    universe: "Maison & Déco",
+    subUniverse: "Arts de la table", // NOUVEAU
     price: 2500,
     countInStock: 22,
     rating: 4.6,
@@ -258,6 +280,8 @@ const products = [
     plasticOrigin: "Mix de bouchons et couvercles",
     category: "Maison",
     productType: "Sous verre",
+    universe: "Maison & Déco",
+    subUniverse: "Décoration intérieure", // NOUVEAU
     price: 2500,
     countInStock: 22,
     rating: 4.6,

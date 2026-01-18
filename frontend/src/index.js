@@ -41,6 +41,15 @@ import CGVScreen from "./screens/legal/CGVScreen";
 import CGUScreen from "./screens/legal/CGUScreen";
 import LandingPage from "./screens/LandingPage/LandingPage.jsx";
 import AboutScreen from "./screens/AboutScreen/AboutScreen.jsx";
+import AdminUniversesScreen from "./screens/admin/AdminUniversesScreen.jsx";
+import UniversesScreen from "./screens/UniversesScreen/UniversesScreen.jsx";
+import UniverseProductsScreen from "./screens/UniverseProductsScreen/UniverseProdutsScreen.jsx";
+import AdminSubUniversesScreen from "./screens/admin/AdminSubUniversesScreen.jsx";
+import SubUniversesProductsScreen from "./screens/SubUniversesScreen/SubUniversesProductsScreen.jsx";
+import AdminProspectsScreen from "./screens/admin/AdminProspectsScreen.jsx";
+import AdminMailingScreen from './screens/admin/AdminMailingScreen';
+import AdminCampaignEditScreen from './screens/admin/AdminCampaignEditScreen';
+import AdminCampaignPreviewScreen from './screens/admin/AdminCampaignPreviewScreen';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -49,13 +58,19 @@ const router = createBrowserRouter(
 
       <Route path="/register" element={<RegisterScreen />} />
       <Route path="/login" element={<LoginScreen />} />
+      <Route path="/universes" element={<UniversesScreen />} />
+  
+      <Route path="/universe/:slug" element={<UniverseProductsScreen />} />
+     <Route path="/universes" element={<UniversesScreen />} />
+<Route path="/universes/:slug/:subSlug" element={<SubUniversesProductsScreen />} />
+<Route path="/universes/:slug" element={<UniverseProductsScreen />} />
       <Route path="/products" element={<ProductsScreen />} />
       <Route path="/product/:id" element={<ProductScreen />} />
       <Route path="/cart" element={<CartScreen />} />
       <Route path="/partners" element={<PartnersScreen />} />
       <Route path="/contact" element={<ContactScreen />} />
 
-<Route path="/about" element={<AboutScreen />} />
+      <Route path="/about" element={<AboutScreen />} />
 
       <Route path="/mentions-legales" element={<MentionsLegalesScreen />} />
       <Route
@@ -78,8 +93,11 @@ const router = createBrowserRouter(
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboardScreen />} />
           <Route path="contacts" element={<AdminContactsScreen />} />
+          <Route path="universes" element={<AdminUniversesScreen />} />
+          <Route path="subuniverses" element={<AdminSubUniversesScreen />} />
           <Route path="contacts/:id" element={<AdminContactDetailScreen />} />
           <Route path="users" element={<AdminUsersScreen />} />
+         
 
           <Route path="orders" element={<AdminOrdersScreen />} />
           <Route path="/admin/products" element={<AdminProductScreen />} />
@@ -87,12 +105,18 @@ const router = createBrowserRouter(
             path="/admin/products/create"
             element={<AdminProductDetailsScreen />}
           />
+              <Route path="/admin/prospects" element={<AdminProspectsScreen />} />
           <Route
             path="/admin/products/:id"
             element={<AdminProductDetailsScreen />}
           />
           <Route path="orders/:id" element={<AdminOrderDetailScreen />} />
         </Route>
+
+        <Route path="/admin/mailing" element={<AdminMailingScreen />} />
+<Route path="/admin/mailing/new" element={<AdminCampaignEditScreen />} />
+<Route path="/admin/mailing/:id/edit" element={<AdminCampaignEditScreen />} />
+<Route path="/admin/mailing/:id/preview" element={<AdminCampaignPreviewScreen />} />
       </Route>
 
       <Route path="*" element={<NotFoundScreen />} />

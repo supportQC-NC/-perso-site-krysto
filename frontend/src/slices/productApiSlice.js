@@ -1,28 +1,3 @@
-
-// import { apiSlice } from "./apiSlice";
-
-// export const productApiSlice = apiSlice.injectEndpoints({
-//   endpoints: (builder) => ({
-//     getProducts: builder.query({
-//       query: () => ({
-//         url: "/api/products",
-//       }),
-//       providesTags: ["Product"],
-//       keepUnusedDataFor: 5,
-//     }),
-//     getProductById: builder.query({
-//       query: (id) => ({
-//         url: `/api/products/${id}`,
-//       }),
-//       providesTags: ["Product"],
-//       keepUnusedDataFor: 5,
-//     }),
-//   }),
-// });
-
-// export const { useGetProductsQuery, useGetProductByIdQuery } = productApiSlice;
-
-
 import { apiSlice } from "./apiSlice";
 
 export const productApiSlice = apiSlice.injectEndpoints({
@@ -43,13 +18,29 @@ export const productApiSlice = apiSlice.injectEndpoints({
       query: (id) => ({
         url: `/api/products/${id}`,
       }),
-      providesTags: ["Product"],
+      providesTags: (result, error, id) => [{ type: "Product", id }],
       keepUnusedDataFor: 5,
     }),
 
     getProductStats: builder.query({
       query: () => ({
         url: "/api/products/stats",
+      }),
+      providesTags: ["Product"],
+      keepUnusedDataFor: 5,
+    }),
+
+    getTopProducts: builder.query({
+      query: () => ({
+        url: "/api/products/top",
+      }),
+      providesTags: ["Product"],
+      keepUnusedDataFor: 5,
+    }),
+
+    getFeaturedProducts: builder.query({
+      query: () => ({
+        url: "/api/products/featured",
       }),
       providesTags: ["Product"],
       keepUnusedDataFor: 5,
@@ -64,7 +55,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: data,
       }),
-      invalidatesTags: ["Product"],
+      invalidatesTags: ["Product", "SubUniverse", "Universe"],
     }),
 
     updateProduct: builder.mutation({
@@ -73,7 +64,12 @@ export const productApiSlice = apiSlice.injectEndpoints({
         method: "PUT",
         body: data,
       }),
-      invalidatesTags: ["Product"],
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Product", id },
+        "Product",
+        "SubUniverse",
+        "Universe",
+      ],
     }),
 
     deleteProduct: builder.mutation({
@@ -81,7 +77,7 @@ export const productApiSlice = apiSlice.injectEndpoints({
         url: `/api/products/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Product"],
+      invalidatesTags: ["Product", "SubUniverse", "Universe"],
     }),
 
     uploadProductImage: builder.mutation({
@@ -90,6 +86,25 @@ export const productApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: formData,
       }),
+    }),
+
+    uploadProductImages: builder.mutation({
+      query: (formData) => ({
+        url: "/api/upload/multiple",
+        method: "POST",
+        body: formData,
+      }),
+    }),
+
+    createProductReview: builder.mutation({
+      query: ({ productId, ...data }) => ({
+        url: `/api/products/${productId}/reviews`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { productId }) => [
+        { type: "Product", id: productId },
+      ],
     }),
 
     toggleProductFeatured: builder.mutation({
@@ -109,25 +124,52 @@ export const productApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["Product"],
     }),
 
+    updateProductUniverse: builder.mutation({
+      query: ({ id, universe }) => ({
+        url: `/api/products/${id}/universe`,
+        method: "PUT",
+        body: { universe },
+      }),
+      invalidatesTags: ["Product", "Universe", "SubUniverse"],
+    }),
+
+    // NOUVEAU: Mise à jour du sous-univers
+    updateProductSubUniverse: builder.mutation({
+      query: ({ id, subUniverse }) => ({
+        url: `/api/products/${id}/subuniverse`,
+        method: "PUT",
+        body: { subUniverse },
+      }),
+      invalidatesTags: ["Product", "SubUniverse"],
+    }),
+
     duplicateProduct: builder.mutation({
       query: (id) => ({
         url: `/api/products/${id}/duplicate`,
         method: "POST",
       }),
-      invalidatesTags: ["Product"],
+      invalidatesTags: ["Product", "SubUniverse", "Universe"],
     }),
   }),
 });
 
 export const {
+  // Queries
   useGetProductsQuery,
   useGetProductByIdQuery,
   useGetProductStatsQuery,
+  useGetTopProductsQuery,
+  useGetFeaturedProductsQuery,
+  // Mutations
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
   useUploadProductImageMutation,
+  useUploadProductImagesMutation,
+  useCreateProductReviewMutation,
   useToggleProductFeaturedMutation,
   useUpdateProductStatusMutation,
+  useUpdateProductUniverseMutation,
+  useUpdateProductSubUniverseMutation, // NOUVEAU
   useDuplicateProductMutation,
 } = productApiSlice;

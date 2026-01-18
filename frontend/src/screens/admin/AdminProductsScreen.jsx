@@ -9,6 +9,7 @@ import {
   useToggleProductFeaturedMutation,
   useDuplicateProductMutation,
 } from "../../slices/productApiSlice";
+import { useGetUniversesQuery } from "../../slices/universeApiSlice";
 import Loader from "../../components/global/Loader";
 import "./AdminProductsScreen.css";
 
@@ -20,20 +21,19 @@ const AdminProductScreen = () => {
     category: "",
     productType: "",
     plasticType: "",
+    universe: "",
     search: "",
   });
 
   const { data, isLoading, error, refetch } = useGetProductsQuery(filters);
   const { data: stats } = useGetProductStatsQuery();
+  const { data: universes } = useGetUniversesQuery();
 
   // Gérer les différents formats de réponse API
   const products = data?.products || data || [];
   const totalPages = data?.totalPages || 1;
   const currentPage = data?.currentPage || data?.page || filters.page;
 
-  // Debug - à supprimer en production
-  console.log("API Response:", data);
-  console.log("Products:", products);
   const [deleteProduct] = useDeleteProductMutation();
   const [updateStatus] = useUpdateProductStatusMutation();
   const [toggleFeatured] = useToggleProductFeaturedMutation();
@@ -187,6 +187,21 @@ const AdminProductScreen = () => {
           />
         </div>
         <div className="filter-group">
+          <label>Univers</label>
+          <select
+            name="universe"
+            value={filters.universe}
+            onChange={handleFilterChange}
+          >
+            <option value="">Tous les univers</option>
+            {universes?.map((universe) => (
+              <option key={universe._id} value={universe._id}>
+                {universe.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="filter-group">
           <label>Statut</label>
           <select
             name="status"
@@ -245,6 +260,7 @@ const AdminProductScreen = () => {
                 <thead>
                   <tr>
                     <th>Produit</th>
+                    <th>Univers</th>
                     <th>Catégorie</th>
                     <th>Prix</th>
                     <th>Stock</th>
@@ -280,6 +296,15 @@ const AdminProductScreen = () => {
                             </div>
                           </div>
                         </div>
+                      </td>
+                      <td>
+                        {product.universe ? (
+                          <span className="universe-badge">
+                            🌍 {product.universe.name}
+                          </span>
+                        ) : (
+                          <span className="no-universe">-</span>
+                        )}
                       </td>
                       <td>
                         <span className="category-badge">

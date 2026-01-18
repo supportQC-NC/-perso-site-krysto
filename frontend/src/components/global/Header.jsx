@@ -50,8 +50,11 @@ const Header = () => {
           <Link to="/" onClick={closeMenu}>
             Accueil
           </Link>
+          <Link to="/universes" onClick={closeMenu}>
+            Univers
+          </Link>
           <Link to="/products" onClick={closeMenu}>
-            Nos produits
+            Produits
           </Link>
           <Link to="/about" onClick={closeMenu}>
             Notre démarche

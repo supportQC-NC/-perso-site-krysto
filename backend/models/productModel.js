@@ -1,7 +1,56 @@
 import mongoose from "mongoose";
 
+// ==========================================
+// SCHEMA DES AVIS
+// ==========================================
+const reviewSchema = mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "User",
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    rating: {
+      type: Number,
+      required: true,
+    },
+    comment: {
+      type: String,
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// ==========================================
+// SCHEMA DU PRODUIT
+// ==========================================
 const productSchema = new mongoose.Schema(
   {
+    // Référence à l'utilisateur qui a créé le produit
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "User",
+    },
+    // Référence à l'univers du produit
+    universe: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Universe",
+      default: null,
+    },
+    // NOUVEAU: Référence au sous-univers du produit
+    subUniverse: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SubUniverse",
+      default: null,
+    },
     name: {
       type: String,
       required: [true, "Le nom du produit est requis"],
@@ -49,10 +98,7 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: [true, "L'origine du plastique est requise"],
     },
-
-    // ==========================================
-    // CATÉGORIE & TYPE DE PRODUIT
-    // ==========================================
+    // Champ category conservé (ne pas retirer!)
     category: {
       type: String,
       required: [true, "La catégorie est requise"],
@@ -74,44 +120,33 @@ const productSchema = new mongoose.Schema(
       required: [true, "Le type de produit est requis"],
       enum: {
         values: [
-          // Maison
           "Cache-pot",
           "Sous-verre",
           "Dessous de plat",
+          "Sous verre",
           "Vase",
-          // Salle de bain
           "Peigne",
           "Porte-savon",
           "Gobelet",
           "Pack Salle de bain",
-          // Accessoires
           "Lunettes",
           "Porte-clés",
           "Coque téléphone",
-          // Jeux
           "Jeu de société",
           "Jouet",
-          // Bureau
           "Stylo",
           "Pot à crayons",
           "Règle",
-          // Bijoux
           "Bague",
           "Bracelet",
           "Collier",
           "Boucles d'oreilles",
-          // Coffrets
           "Coffret cadeau",
-          // Autre
           "Autre",
         ],
         message: "{VALUE} n'est pas un type de produit valide",
       },
     },
-
-    // ==========================================
-    // PRIX & STOCK
-    // ==========================================
     price: {
       type: Number,
       required: [true, "Le prix est requis"],
@@ -128,10 +163,8 @@ const productSchema = new mongoose.Schema(
       min: [0, "Le stock ne peut pas être négatif"],
       default: 0,
     },
-
-    // ==========================================
-    // AVIS & NOTES
-    // ==========================================
+    // Avis des clients
+    reviews: [reviewSchema],
     rating: {
       type: Number,
       default: 0,
@@ -143,18 +176,10 @@ const productSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
-
-    // ==========================================
-    // INFORMATIONS COMPLÉMENTAIRES
-    // ==========================================
     careInstructions: {
       type: String,
       default: "",
     },
-
-    // ==========================================
-    // STATUTS & FLAGS
-    // ==========================================
     isNewProduct: {
       type: Boolean,
       default: false,
@@ -172,10 +197,6 @@ const productSchema = new mongoose.Schema(
       enum: ["active", "draft", "archived"],
       default: "active",
     },
-
-    // ==========================================
-    // SEO
-    // ==========================================
     slug: {
       type: String,
       unique: true,
@@ -200,6 +221,13 @@ productSchema.index({ productType: 1 });
 productSchema.index({ category: 1, productType: 1 });
 productSchema.index({ price: 1 });
 productSchema.index({ slug: 1 });
+// Index pour l'univers
+productSchema.index({ universe: 1 });
+productSchema.index({ universe: 1, status: 1 });
+// NOUVEAU: Index pour le sous-univers
+productSchema.index({ subUniverse: 1 });
+productSchema.index({ subUniverse: 1, status: 1 });
+productSchema.index({ universe: 1, subUniverse: 1, status: 1 });
 
 // ==========================================
 // VIRTUALS
@@ -213,31 +241,29 @@ productSchema.virtual("currentPrice").get(function () {
 });
 
 // ==========================================
-// MIDDLEWARE
+// MIDDLEWARE PRE-SAVE
 // ==========================================
-
-// Générer le slug automatiquement avant la sauvegarde
-productSchema.pre("save", function (next) {
+productSchema.pre("save", function () {
+  // Générer le slug
   if (this.isModified("name") || !this.slug) {
-    this.slug = this.name
+    let baseSlug = this.name
       .toLowerCase()
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // Supprime les accents
-      .replace(/[^a-z0-9]+/g, "-") // Remplace les caractères spéciaux par des tirets
-      .replace(/(^-|-$)/g, ""); // Supprime les tirets en début/fin
-  }
-  next();
-});
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
 
-// Mettre à jour isOnSale si salePrice est défini
-productSchema.pre("save", function (next) {
+    // Ajouter timestamp pour unicité
+    this.slug = `${baseSlug}-${Date.now()}`;
+  }
+
+  // Gérer isOnSale
   if (this.salePrice && this.salePrice < this.price) {
     this.isOnSale = true;
   } else {
     this.isOnSale = false;
     this.salePrice = null;
   }
-  next();
 });
 
 const Product = mongoose.model("Product", productSchema);

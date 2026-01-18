@@ -6,11 +6,17 @@ import colors from "colors";
 import User from "./models/userModel.js";
 import Product from "./models/productModel.js";
 import Order from "./models/orderModel.js";
+import Universe from "./models/universeModel.js";
+import SubUniverse from "./models/subUniverseModel.js";
+import Prospect from "./models/prospectModel.js";
 
 // Data
 import users from "./data/users.js";
 import products from "./data/products.js";
 import orders from "./data/orders.js";
+import universes from "./data/universe.js";
+import subUniverses from "./data/subUniverses.js";
+import prospects from "./data/prospects.js";
 
 // Config
 import connectDB from "./config/db.js";
@@ -25,6 +31,9 @@ const importData = async () => {
     await Order.deleteMany();
     await Product.deleteMany();
     await User.deleteMany();
+    await Universe.deleteMany();
+    await SubUniverse.deleteMany();
+    await Prospect.deleteMany();
 
     console.log("🗑️  Base de données nettoyée".yellow);
 
@@ -34,21 +43,62 @@ const importData = async () => {
 
     console.log(`✅ ${createdUsers.length} utilisateurs créés`.green);
 
-    // 3. Insérer les produits (avec l'admin comme créateur si besoin)
+    // 3. Insérer les univers (un par un pour déclencher le pre-save qui génère le slug)
+    const createdUniverses = [];
+    for (const universeData of universes) {
+      const universe = await Universe.create(universeData);
+      createdUniverses.push(universe);
+    }
+    console.log(`✅ ${createdUniverses.length} univers créés`.green);
+
+    // Créer un map nom → ObjectId pour les univers
+    const universeMap = {};
+    createdUniverses.forEach((u) => {
+      universeMap[u.name] = u._id;
+    });
+
+    // 4. NOUVEAU: Insérer les sous-univers
+    const createdSubUniverses = [];
+    for (const subUniverseData of subUniverses) {
+      const universeId = universeMap[subUniverseData.universeName];
+      if (universeId) {
+        const subUniverse = await SubUniverse.create({
+          name: subUniverseData.name,
+          description: subUniverseData.description,
+          image: subUniverseData.image,
+          universe: universeId,
+          isActive: subUniverseData.isActive,
+          displayOrder: subUniverseData.displayOrder,
+        });
+        createdSubUniverses.push(subUniverse);
+      }
+    }
+    console.log(`✅ ${createdSubUniverses.length} sous-univers créés`.green);
+
+    // Créer un map nom → ObjectId pour les sous-univers
+    const subUniverseMap = {};
+    createdSubUniverses.forEach((su) => {
+      subUniverseMap[su.name] = su._id;
+    });
+
+    // 5. Insérer les produits
     const sampleProducts = products.map((product) => {
-      return { ...product, user: adminUser };
+      const universeId = product.universe ? universeMap[product.universe] : null;
+      const subUniverseId = product.subUniverse ? subUniverseMap[product.subUniverse] : null;
+      return {
+        ...product,
+        user: adminUser,
+        universe: universeId,
+        subUniverse: subUniverseId,
+      };
     });
 
     const createdProducts = await Product.insertMany(sampleProducts);
-
     console.log(`✅ ${createdProducts.length} produits créés`.green);
 
-    // 4. Insérer les commandes avec les vrais ObjectIds
+    // 6. Insérer les commandes
     const sampleOrders = orders.map((order) => {
-      // Remplacer userIndex par le vrai ObjectId
       const userId = createdUsers[order.userIndex]._id;
-
-      // Remplacer productIndex par le vrai ObjectId dans chaque orderItem
       const orderItems = order.orderItems.map((item) => {
         const { productIndex, ...rest } = item;
         return {
@@ -56,8 +106,6 @@ const importData = async () => {
           product: createdProducts[productIndex]._id,
         };
       });
-
-      // Retourner la commande avec les vrais IDs
       const { userIndex, ...orderData } = order;
       return {
         ...orderData,
@@ -67,13 +115,16 @@ const importData = async () => {
     });
 
     const createdOrders = await Order.insertMany(sampleOrders);
-
     console.log(`✅ ${createdOrders.length} commandes créées`.green);
 
-    console.log("🎉 Données importées avec succès !".green.bold);
+    // 7. NOUVEAU: Insérer les prospects
+    const createdProspects = await Prospect.insertMany(prospects);
+    console.log(`✅ ${createdProspects.length} prospects créés`.green);
+
+    console.log("\n🎉 Données importées avec succès !".green.bold);
     process.exit();
   } catch (error) {
-    console.error(`❌ Erreur: ${error.message}`.red.bold);
+    console.error(`\n❌ Erreur: ${error.message}`.red.bold);
     process.exit(1);
   }
 };
@@ -83,6 +134,9 @@ const destroyData = async () => {
     await Order.deleteMany();
     await Product.deleteMany();
     await User.deleteMany();
+    await Universe.deleteMany();
+    await SubUniverse.deleteMany();
+    await Prospect.deleteMany();
 
     console.log("🗑️  Toutes les données ont été supprimées !".red.bold);
     process.exit();
@@ -91,10 +145,6 @@ const destroyData = async () => {
     process.exit(1);
   }
 };
-
-// Commandes CLI
-// npm run data:import  → Importer les données
-// npm run data:destroy → Supprimer les données
 
 if (process.argv[2] === "-d") {
   destroyData();
