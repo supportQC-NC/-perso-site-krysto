@@ -2,8 +2,11 @@ import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
+
+import { clearCart } from "../../../slices/cartSlice";
 import CheckoutSteps from "../CheckoutSteps/CheckoutSteps";
 import "./PlaceOrderScreen.css";
+import { useCreateOrderMutation } from "../../../slices/orderApiSlice";
 
 const PlaceOrderScreen = () => {
   const navigate = useNavigate();
@@ -20,6 +23,8 @@ const PlaceOrderScreen = () => {
     totalPrice,
   } = cart;
 
+  const [createOrder, { isLoading }] = useCreateOrderMutation();
+
   useEffect(() => {
     if (!shippingAddress?.address) {
       navigate("/shipping");
@@ -30,9 +35,19 @@ const PlaceOrderScreen = () => {
 
   const placeOrderHandler = async () => {
     try {
-      // TODO: Appeler l'API pour créer la commande
+      const res = await createOrder({
+        orderItems: cartItems,
+        shippingAddress,
+        paymentMethod,
+        itemsPrice,
+        shippingPrice,
+        taxPrice,
+        totalPrice,
+      }).unwrap();
+
+      dispatch(clearCart());
       toast.success("Commande passée avec succès !");
-      // navigate(`/order/${order._id}`);
+      navigate(`/order/${res._id}`);
     } catch (err) {
       toast.error(err?.data?.message || "Erreur lors de la commande");
     }
@@ -120,9 +135,9 @@ const PlaceOrderScreen = () => {
               <button
                 className="placeorder-btn"
                 onClick={placeOrderHandler}
-                disabled={cartItems.length === 0}
+                disabled={cartItems.length === 0 || isLoading}
               >
-                Confirmer la commande
+                {isLoading ? "Traitement en cours..." : "Confirmer la commande"}
               </button>
             </div>
           </div>

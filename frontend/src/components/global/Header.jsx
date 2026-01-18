@@ -71,6 +71,15 @@ const Header = () => {
 
             {userInfo ? (
               <>
+                {userInfo.isAdmin && (
+                  <Link
+                    to="/admin"
+                    className="header-admin"
+                    onClick={closeMenu}
+                  >
+                    👑 Admin
+                  </Link>
+                )}
                 <Link
                   to="/profile"
                   className="header-profile"
@@ -78,8 +87,12 @@ const Header = () => {
                 >
                   👤 {userInfo.name}
                 </Link>
-                <button className="header-logout" onClick={logoutHandler}>
-                  Déconnexion
+                <button
+                  className="header-logout"
+                  onClick={logoutHandler}
+                  title="Déconnexion"
+                >
+                  🚪
                 </button>
               </>
             ) : (
@@ -98,11 +111,24 @@ const Header = () => {
 
           {userInfo ? (
             <>
+              {userInfo.isAdmin && (
+                <Link
+                  to="/admin"
+                  className="header-admin"
+                  title="Administration"
+                >
+                  👑
+                </Link>
+              )}
               <Link to="/profile" className="header-profile">
                 👤 {userInfo.name}
               </Link>
-              <button className="header-logout" onClick={logoutHandler}>
-                Déconnexion
+              <button
+                className="header-logout"
+                onClick={logoutHandler}
+                title="Déconnexion"
+              >
+                🚪
               </button>
             </>
           ) : (

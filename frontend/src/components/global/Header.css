@@ -94,7 +94,9 @@
   font-weight: 500;
   padding: 0.5rem 1rem;
   border-radius: 8px;
-  transition: background 0.3s ease, color 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
 }
 
 .header-cart:hover {
@@ -109,7 +111,9 @@
   padding: 0.6rem 1.25rem;
   background: linear-gradient(90deg, #2d6a4f, #40916c);
   border-radius: 8px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .header-login:hover {
@@ -305,4 +309,14 @@
 .header-actions-mobile .header-profile {
   padding: 0.75rem 0;
   border-bottom: 1px solid #e9ecef;
+}
+
+.header-admin {
+  font-size: 1.25rem;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.header-admin:hover {
+  transform: scale(1.1);
 }
