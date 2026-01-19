@@ -45,7 +45,7 @@ const productSchema = new mongoose.Schema(
       ref: "Universe",
       default: null,
     },
-    // NOUVEAU: Référence au sous-univers du produit
+    // Référence au sous-univers du produit
     subUniverse: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "SubUniverse",
@@ -98,53 +98,21 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: [true, "L'origine du plastique est requise"],
     },
-    // Champ category conservé (ne pas retirer!)
+    // Catégorie du produit
     category: {
       type: String,
       required: [true, "La catégorie est requise"],
       enum: {
         values: [
-          "Maison",
-          "Salle de bain",
-          "Accessoires",
+          "Maison & Déco",
+          "Bazar",
           "Jeux",
-          "Bureau",
+          "Bureautique",
           "Bijoux",
-          "Coffrets",
+          "Mode & beauté",
+          "",
         ],
         message: "{VALUE} n'est pas une catégorie valide",
-      },
-    },
-    productType: {
-      type: String,
-      required: [true, "Le type de produit est requis"],
-      enum: {
-        values: [
-          "Cache-pot",
-          "Sous-verre",
-          "Dessous de plat",
-          "Sous verre",
-          "Vase",
-          "Peigne",
-          "Porte-savon",
-          "Gobelet",
-          "Pack Salle de bain",
-          "Lunettes",
-          "Porte-clés",
-          "Coque téléphone",
-          "Jeu de société",
-          "Jouet",
-          "Stylo",
-          "Pot à crayons",
-          "Règle",
-          "Bague",
-          "Bracelet",
-          "Collier",
-          "Boucles d'oreilles",
-          "Coffret cadeau",
-          "Autre",
-        ],
-        message: "{VALUE} n'est pas un type de produit valide",
       },
     },
     price: {
@@ -180,6 +148,7 @@ const productSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    // Flags de statut produit
     isNewProduct: {
       type: Boolean,
       default: false,
@@ -191,6 +160,21 @@ const productSchema = new mongoose.Schema(
     isOnSale: {
       type: Boolean,
       default: false,
+    },
+    // NOUVEAU: Produit en déstockage
+    isDestockage: {
+      type: Boolean,
+      default: false,
+    },
+    // NOUVEAU: Produit bientôt disponible (annoncé mais pas encore en stock)
+    isComingSoon: {
+      type: Boolean,
+      default: false,
+    },
+    // Date de disponibilité prévue (optionnel, pour isComingSoon)
+    availableDate: {
+      type: Date,
+      default: null,
     },
     status: {
       type: String,
@@ -217,17 +201,20 @@ const productSchema = new mongoose.Schema(
 // ==========================================
 productSchema.index({ name: "text", description_fr: "text" });
 productSchema.index({ category: 1 });
-productSchema.index({ productType: 1 });
-productSchema.index({ category: 1, productType: 1 });
 productSchema.index({ price: 1 });
 productSchema.index({ slug: 1 });
 // Index pour l'univers
 productSchema.index({ universe: 1 });
 productSchema.index({ universe: 1, status: 1 });
-// NOUVEAU: Index pour le sous-univers
+// Index pour le sous-univers
 productSchema.index({ subUniverse: 1 });
 productSchema.index({ subUniverse: 1, status: 1 });
 productSchema.index({ universe: 1, subUniverse: 1, status: 1 });
+// Index pour les nouveaux flags
+productSchema.index({ isDestockage: 1 });
+productSchema.index({ isComingSoon: 1 });
+productSchema.index({ isDestockage: 1, status: 1 });
+productSchema.index({ isComingSoon: 1, status: 1 });
 
 // ==========================================
 // VIRTUALS
@@ -238,6 +225,15 @@ productSchema.virtual("formattedPrice").get(function () {
 
 productSchema.virtual("currentPrice").get(function () {
   return this.isOnSale && this.salePrice ? this.salePrice : this.price;
+});
+
+// Virtual pour vérifier si le produit est disponible à l'achat
+productSchema.virtual("isAvailable").get(function () {
+  return (
+    this.status === "active" &&
+    !this.isComingSoon &&
+    this.countInStock > 0
+  );
 });
 
 // ==========================================
@@ -263,6 +259,16 @@ productSchema.pre("save", function () {
   } else {
     this.isOnSale = false;
     this.salePrice = null;
+  }
+
+  // Si le produit est "coming soon", il ne devrait pas être en destockage
+  if (this.isComingSoon) {
+    this.isDestockage = false;
+  }
+
+  // Si pas de date de disponibilité et plus en coming soon, reset
+  if (!this.isComingSoon) {
+    this.availableDate = null;
   }
 });
 

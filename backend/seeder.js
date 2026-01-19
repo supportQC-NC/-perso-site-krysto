@@ -57,7 +57,7 @@ const importData = async () => {
       universeMap[u.name] = u._id;
     });
 
-    // 4. NOUVEAU: Insérer les sous-univers
+    // 4. Insérer les sous-univers
     const createdSubUniverses = [];
     for (const subUniverseData of subUniverses) {
       const universeId = universeMap[subUniverseData.universeName];
@@ -96,6 +96,14 @@ const importData = async () => {
     const createdProducts = await Product.insertMany(sampleProducts);
     console.log(`✅ ${createdProducts.length} produits créés`.green);
 
+    // Afficher les stats des produits
+    const destockageCount = createdProducts.filter(p => p.isDestockage).length;
+    const comingSoonCount = createdProducts.filter(p => p.isComingSoon).length;
+    const newProductsCount = createdProducts.filter(p => p.isNewProduct).length;
+    console.log(`   - ${destockageCount} produits en déstockage`.cyan);
+    console.log(`   - ${comingSoonCount} produits "bientôt disponible"`.cyan);
+    console.log(`   - ${newProductsCount} nouveaux produits`.cyan);
+
     // 6. Insérer les commandes
     const sampleOrders = orders.map((order) => {
       const userId = createdUsers[order.userIndex]._id;
@@ -117,7 +125,7 @@ const importData = async () => {
     const createdOrders = await Order.insertMany(sampleOrders);
     console.log(`✅ ${createdOrders.length} commandes créées`.green);
 
-    // 7. NOUVEAU: Insérer les prospects
+    // 7. Insérer les prospects
     const createdProspects = await Prospect.insertMany(prospects);
     console.log(`✅ ${createdProspects.length} prospects créés`.green);
 

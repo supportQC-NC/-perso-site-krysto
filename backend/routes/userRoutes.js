@@ -9,23 +9,57 @@ import {
   getUserById,
   deleteUser,
   updateUser,
+  // Pro management
+  setUserAsPro,
+  updateUserProInfo,
+  removeUserPro,
+  suspendUserPro,
+  reactivateUserPro,
+  getUserProStats,
+  getProUsers,
 } from "../controllers/userController.js";
+import { protect, admin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Public routes
+// ==========================================
+// PUBLIC ROUTES
+// ==========================================
 router.post("/", registerUser);
 router.post("/login", authUser);
 
-// Routes (temporairement sans protection)
-router.post("/logout", logoutUser);
-router.get("/profile", getUserProfile);
-router.put("/profile", updateUserProfile);
+// ==========================================
+// USER ROUTES (authentifié)
+// ==========================================
+router.post("/logout", protect, logoutUser);
+router.get("/profile", protect, getUserProfile);
+router.put("/profile", protect, updateUserProfile);
 
-// Admin routes (temporairement sans protection)
-router.get("/", getUsers);
-router.get("/:id", getUserById);
-router.put("/:id", updateUser);
-router.delete("/:id", deleteUser);
+// ==========================================
+// ADMIN ROUTES
+// ==========================================
+
+// Stats Pro (doit être avant /:id)
+router.get("/pro-stats", protect, admin, getUserProStats);
+
+// Liste des utilisateurs Pro
+router.get("/pro", protect, admin, getProUsers);
+
+// Liste de tous les utilisateurs
+router.get("/", protect, admin, getUsers);
+
+// Routes avec ID
+router
+  .route("/:id")
+  .get(protect, admin, getUserById)
+  .put(protect, admin, updateUser)
+  .delete(protect, admin, deleteUser);
+
+// Gestion Pro
+router.put("/:id/set-pro", protect, admin, setUserAsPro);
+router.put("/:id/pro-info", protect, admin, updateUserProInfo);
+router.put("/:id/remove-pro", protect, admin, removeUserPro);
+router.put("/:id/suspend-pro", protect, admin, suspendUserPro);
+router.put("/:id/reactivate-pro", protect, admin, reactivateUserPro);
 
 export default router;

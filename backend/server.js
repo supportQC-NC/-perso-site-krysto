@@ -17,6 +17,9 @@ import universeRoutes from "./routes/universRoutes.js";
 import subUniverseRoutes from "./routes/subUniverseRoutes.js";
 import prospectRoutes from "./routes/prospectRoutes.js";
 import mailingRoutes from "./routes/mailingRoutes.js";
+import proRequestRoutes from "./routes/proRequestRoutes.js";
+import proOrderRoutes from "./routes/proOrderRoutes.js";
+import reapproRequestRoutes from "./routes/reapproRequestRoutes.js";
 
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
@@ -81,6 +84,15 @@ app.use("/api/prospects", prospectRoutes);
 
 // Campagnes Mailing
 app.use("/api/mailing", mailingRoutes);
+
+// Demandes de compte Pro
+app.use("/api/pro-requests", proRequestRoutes);
+
+// Commandes Pro (Revendeurs & Dépôt-vente)
+app.use("/api/pro-orders", proOrderRoutes);
+
+// Demandes de réapprovisionnement
+app.use("/api/reappro-requests", reapproRequestRoutes);
 
 // ==========================================
 // ERROR MIDDLEWARES

@@ -46,6 +46,33 @@ export const productApiSlice = apiSlice.injectEndpoints({
       keepUnusedDataFor: 5,
     }),
 
+    // NOUVEAU: Produits en déstockage
+    getDestockageProducts: builder.query({
+      query: () => ({
+        url: "/api/products/destockage",
+      }),
+      providesTags: ["Product"],
+      keepUnusedDataFor: 5,
+    }),
+
+    // NOUVEAU: Produits bientôt disponibles
+    getComingSoonProducts: builder.query({
+      query: () => ({
+        url: "/api/products/coming-soon",
+      }),
+      providesTags: ["Product"],
+      keepUnusedDataFor: 5,
+    }),
+
+    // NOUVEAU: Nouveaux produits
+    getNewProducts: builder.query({
+      query: () => ({
+        url: "/api/products/new",
+      }),
+      providesTags: ["Product"],
+      keepUnusedDataFor: 5,
+    }),
+
     // ==========================================
     // MUTATIONS
     // ==========================================
@@ -115,6 +142,25 @@ export const productApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["Product"],
     }),
 
+    // NOUVEAU: Toggle déstockage
+    toggleProductDestockage: builder.mutation({
+      query: (id) => ({
+        url: `/api/products/${id}/destockage`,
+        method: "PUT",
+      }),
+      invalidatesTags: ["Product"],
+    }),
+
+    // NOUVEAU: Toggle coming soon (avec date optionnelle)
+    toggleProductComingSoon: builder.mutation({
+      query: ({ id, availableDate }) => ({
+        url: `/api/products/${id}/coming-soon`,
+        method: "PUT",
+        body: { availableDate },
+      }),
+      invalidatesTags: ["Product"],
+    }),
+
     updateProductStatus: builder.mutation({
       query: ({ id, status }) => ({
         url: `/api/products/${id}/status`,
@@ -133,7 +179,6 @@ export const productApiSlice = apiSlice.injectEndpoints({
       invalidatesTags: ["Product", "Universe", "SubUniverse"],
     }),
 
-    // NOUVEAU: Mise à jour du sous-univers
     updateProductSubUniverse: builder.mutation({
       query: ({ id, subUniverse }) => ({
         url: `/api/products/${id}/subuniverse`,
@@ -160,6 +205,9 @@ export const {
   useGetProductStatsQuery,
   useGetTopProductsQuery,
   useGetFeaturedProductsQuery,
+  useGetDestockageProductsQuery,    // NOUVEAU
+  useGetComingSoonProductsQuery,    // NOUVEAU
+  useGetNewProductsQuery,           // NOUVEAU
   // Mutations
   useCreateProductMutation,
   useUpdateProductMutation,
@@ -168,8 +216,10 @@ export const {
   useUploadProductImagesMutation,
   useCreateProductReviewMutation,
   useToggleProductFeaturedMutation,
+  useToggleProductDestockageMutation,   // NOUVEAU
+  useToggleProductComingSoonMutation,   // NOUVEAU
   useUpdateProductStatusMutation,
   useUpdateProductUniverseMutation,
-  useUpdateProductSubUniverseMutation, // NOUVEAU
+  useUpdateProductSubUniverseMutation,
   useDuplicateProductMutation,
 } = productApiSlice;

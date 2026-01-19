@@ -20,22 +20,43 @@ const getProducts = asyncHandler(async (req, res) => {
 
   const category = req.query.category ? { category: req.query.category } : {};
   const status = req.query.status ? { status: req.query.status } : {};
-  const productType = req.query.productType
-    ? { productType: req.query.productType }
-    : {};
   
   // Filtre par univers
   const universe = req.query.universe ? { universe: req.query.universe } : {};
   
-  // NOUVEAU: Filtre par sous-univers
+  // Filtre par sous-univers
   const subUniverse = req.query.subUniverse ? { subUniverse: req.query.subUniverse } : {};
 
-  const filters = { ...keyword, ...category, ...status, ...productType, ...universe, ...subUniverse };
+  // Filtres pour les nouveaux flags
+  const isDestockage = req.query.isDestockage !== undefined 
+    ? { isDestockage: req.query.isDestockage === "true" } 
+    : {};
+  const isComingSoon = req.query.isComingSoon !== undefined 
+    ? { isComingSoon: req.query.isComingSoon === "true" } 
+    : {};
+  const isNewProduct = req.query.isNewProduct !== undefined 
+    ? { isNewProduct: req.query.isNewProduct === "true" } 
+    : {};
+  const isFeatured = req.query.isFeatured !== undefined 
+    ? { isFeatured: req.query.isFeatured === "true" } 
+    : {};
+
+  const filters = { 
+    ...keyword, 
+    ...category, 
+    ...status, 
+    ...universe, 
+    ...subUniverse,
+    ...isDestockage,
+    ...isComingSoon,
+    ...isNewProduct,
+    ...isFeatured,
+  };
 
   const count = await Product.countDocuments(filters);
   const products = await Product.find(filters)
     .populate("universe", "name slug image")
-    .populate("subUniverse", "name slug image") // NOUVEAU: Peupler le sous-univers
+    .populate("subUniverse", "name slug image")
     .limit(pageSize)
     .skip(pageSize * (page - 1))
     .sort({ createdAt: -1 });
@@ -54,7 +75,7 @@ const getProducts = asyncHandler(async (req, res) => {
 const getProductById = asyncHandler(async (req, res) => {
   const product = await Product.findById(req.params.id)
     .populate("universe", "name slug image")
-    .populate("subUniverse", "name slug image"); // NOUVEAU
+    .populate("subUniverse", "name slug image");
 
   if (product) {
     res.json(product);
@@ -74,6 +95,9 @@ const getProductStats = asyncHandler(async (req, res) => {
   const archivedProducts = await Product.countDocuments({ status: "archived" });
   const featuredProducts = await Product.countDocuments({ isFeatured: true });
   const outOfStock = await Product.countDocuments({ countInStock: 0 });
+  const destockageProducts = await Product.countDocuments({ isDestockage: true });
+  const comingSoonProducts = await Product.countDocuments({ isComingSoon: true });
+  const newProducts = await Product.countDocuments({ isNewProduct: true });
 
   const byCategory = await Product.aggregate([
     { $group: { _id: "$category", count: { $sum: 1 } } },
@@ -109,7 +133,7 @@ const getProductStats = asyncHandler(async (req, res) => {
     { $sort: { count: -1 } },
   ]);
 
-  // NOUVEAU: Stats par sous-univers
+  // Stats par sous-univers
   const bySubUniverse = await Product.aggregate([
     {
       $group: { _id: "$subUniverse", count: { $sum: 1 } },
@@ -145,9 +169,12 @@ const getProductStats = asyncHandler(async (req, res) => {
     archived: archivedProducts,
     featured: featuredProducts,
     outOfStock,
+    destockage: destockageProducts,
+    comingSoon: comingSoonProducts,
+    newProducts,
     byCategory,
     byUniverse,
-    bySubUniverse, // NOUVEAU
+    bySubUniverse,
   });
 });
 
@@ -167,17 +194,19 @@ const createProduct = asyncHandler(async (req, res) => {
     plasticType,
     plasticOrigin,
     category,
-    productType,
     price,
     salePrice,
     countInStock,
     careInstructions,
     isNewProduct,
     isFeatured,
+    isDestockage,
+    isComingSoon,
+    availableDate,
     status,
     tags,
     universe,
-    subUniverse, // NOUVEAU
+    subUniverse,
   } = req.body;
 
   const product = new Product({
@@ -192,17 +221,19 @@ const createProduct = asyncHandler(async (req, res) => {
     plasticType,
     plasticOrigin,
     category,
-    productType,
     price: Number(price),
     salePrice: salePrice ? Number(salePrice) : null,
     countInStock: Number(countInStock) || 0,
     careInstructions: careInstructions || "",
     isNewProduct: isNewProduct || false,
     isFeatured: isFeatured || false,
+    isDestockage: isDestockage || false,
+    isComingSoon: isComingSoon || false,
+    availableDate: availableDate || null,
     status: status || "draft",
     tags: tags || [],
     universe: universe || null,
-    subUniverse: subUniverse || null, // NOUVEAU
+    subUniverse: subUniverse || null,
     user: req.user._id,
     reviews: [],
     rating: 0,
@@ -213,7 +244,7 @@ const createProduct = asyncHandler(async (req, res) => {
   
   // Peupler l'univers et le sous-univers avant de renvoyer
   await createdProduct.populate("universe", "name slug image");
-  await createdProduct.populate("subUniverse", "name slug image"); // NOUVEAU
+  await createdProduct.populate("subUniverse", "name slug image");
   
   res.status(201).json(createdProduct);
 });
@@ -234,17 +265,19 @@ const updateProduct = asyncHandler(async (req, res) => {
     plasticType,
     plasticOrigin,
     category,
-    productType,
     price,
     salePrice,
     countInStock,
     careInstructions,
     isNewProduct,
     isFeatured,
+    isDestockage,
+    isComingSoon,
+    availableDate,
     status,
     tags,
     universe,
-    subUniverse, // NOUVEAU
+    subUniverse,
   } = req.body;
 
   const product = await Product.findById(req.params.id);
@@ -261,7 +294,6 @@ const updateProduct = asyncHandler(async (req, res) => {
     product.plasticType = plasticType || product.plasticType;
     product.plasticOrigin = plasticOrigin || product.plasticOrigin;
     product.category = category || product.category;
-    product.productType = productType || product.productType;
     product.price = price !== undefined ? Number(price) : product.price;
     product.salePrice = salePrice ? Number(salePrice) : null;
     product.countInStock =
@@ -274,18 +306,22 @@ const updateProduct = asyncHandler(async (req, res) => {
       isNewProduct !== undefined ? isNewProduct : product.isNewProduct;
     product.isFeatured =
       isFeatured !== undefined ? isFeatured : product.isFeatured;
+    product.isDestockage =
+      isDestockage !== undefined ? isDestockage : product.isDestockage;
+    product.isComingSoon =
+      isComingSoon !== undefined ? isComingSoon : product.isComingSoon;
+    product.availableDate =
+      availableDate !== undefined ? availableDate : product.availableDate;
     product.status = status || product.status;
     product.tags = tags || product.tags;
-    // Mise à jour de l'univers (permet de mettre null pour retirer d'un univers)
     product.universe = universe !== undefined ? universe : product.universe;
-    // NOUVEAU: Mise à jour du sous-univers
     product.subUniverse = subUniverse !== undefined ? subUniverse : product.subUniverse;
 
     const updatedProduct = await product.save();
     
     // Peupler l'univers et le sous-univers avant de renvoyer
     await updatedProduct.populate("universe", "name slug image");
-    await updatedProduct.populate("subUniverse", "name slug image"); // NOUVEAU
+    await updatedProduct.populate("subUniverse", "name slug image");
     
     res.json(updatedProduct);
   } else {
@@ -319,7 +355,56 @@ const toggleProductFeatured = asyncHandler(async (req, res) => {
     product.isFeatured = !product.isFeatured;
     const updatedProduct = await product.save();
     await updatedProduct.populate("universe", "name slug image");
-    await updatedProduct.populate("subUniverse", "name slug image"); // NOUVEAU
+    await updatedProduct.populate("subUniverse", "name slug image");
+    res.json(updatedProduct);
+  } else {
+    res.status(404);
+    throw new Error("Produit non trouvé");
+  }
+});
+
+// @desc    Toggle product destockage status
+// @route   PUT /api/products/:id/destockage
+// @access  Private/Admin
+const toggleProductDestockage = asyncHandler(async (req, res) => {
+  const product = await Product.findById(req.params.id);
+
+  if (product) {
+    product.isDestockage = !product.isDestockage;
+    // Si on met en destockage, on enlève le "coming soon"
+    if (product.isDestockage) {
+      product.isComingSoon = false;
+      product.availableDate = null;
+    }
+    const updatedProduct = await product.save();
+    await updatedProduct.populate("universe", "name slug image");
+    await updatedProduct.populate("subUniverse", "name slug image");
+    res.json(updatedProduct);
+  } else {
+    res.status(404);
+    throw new Error("Produit non trouvé");
+  }
+});
+
+// @desc    Toggle product coming soon status
+// @route   PUT /api/products/:id/coming-soon
+// @access  Private/Admin
+const toggleProductComingSoon = asyncHandler(async (req, res) => {
+  const { availableDate } = req.body;
+  const product = await Product.findById(req.params.id);
+
+  if (product) {
+    product.isComingSoon = !product.isComingSoon;
+    // Si on met en coming soon, on enlève le destockage
+    if (product.isComingSoon) {
+      product.isDestockage = false;
+      product.availableDate = availableDate || null;
+    } else {
+      product.availableDate = null;
+    }
+    const updatedProduct = await product.save();
+    await updatedProduct.populate("universe", "name slug image");
+    await updatedProduct.populate("subUniverse", "name slug image");
     res.json(updatedProduct);
   } else {
     res.status(404);
@@ -343,7 +428,7 @@ const updateProductStatus = asyncHandler(async (req, res) => {
     product.status = status;
     const updatedProduct = await product.save();
     await updatedProduct.populate("universe", "name slug image");
-    await updatedProduct.populate("subUniverse", "name slug image"); // NOUVEAU
+    await updatedProduct.populate("subUniverse", "name slug image");
     res.json(updatedProduct);
   } else {
     res.status(404);
@@ -360,8 +445,6 @@ const updateProductUniverse = asyncHandler(async (req, res) => {
 
   if (product) {
     product.universe = universe || null;
-    // Si on change l'univers, on peut aussi vouloir réinitialiser le sous-univers
-    // (optionnel, dépend de la logique métier)
     const updatedProduct = await product.save();
     await updatedProduct.populate("universe", "name slug image");
     await updatedProduct.populate("subUniverse", "name slug image");
@@ -410,17 +493,19 @@ const duplicateProduct = asyncHandler(async (req, res) => {
       plasticType: product.plasticType,
       plasticOrigin: product.plasticOrigin,
       category: product.category,
-      productType: product.productType,
       price: product.price,
       salePrice: product.salePrice,
       countInStock: 0,
       careInstructions: product.careInstructions,
       isNewProduct: false,
       isFeatured: false,
+      isDestockage: false,
+      isComingSoon: false,
+      availableDate: null,
       status: "draft",
       tags: product.tags,
       universe: product.universe,
-      subUniverse: product.subUniverse, // NOUVEAU: Conserver le sous-univers
+      subUniverse: product.subUniverse,
       user: req.user._id,
       reviews: [],
       rating: 0,
@@ -429,7 +514,7 @@ const duplicateProduct = asyncHandler(async (req, res) => {
 
     const createdProduct = await duplicatedProduct.save();
     await createdProduct.populate("universe", "name slug image");
-    await createdProduct.populate("subUniverse", "name slug image"); // NOUVEAU
+    await createdProduct.populate("subUniverse", "name slug image");
     res.status(201).json(createdProduct);
   } else {
     res.status(404);
@@ -480,9 +565,9 @@ const createProductReview = asyncHandler(async (req, res) => {
 // @route   GET /api/products/top
 // @access  Public
 const getTopProducts = asyncHandler(async (req, res) => {
-  const products = await Product.find({ status: "active" })
+  const products = await Product.find({ status: "active", isComingSoon: false })
     .populate("universe", "name slug image")
-    .populate("subUniverse", "name slug image") // NOUVEAU
+    .populate("subUniverse", "name slug image")
     .sort({ rating: -1 })
     .limit(4);
   res.json(products);
@@ -494,7 +579,41 @@ const getTopProducts = asyncHandler(async (req, res) => {
 const getFeaturedProducts = asyncHandler(async (req, res) => {
   const products = await Product.find({ isFeatured: true, status: "active" })
     .populate("universe", "name slug image")
-    .populate("subUniverse", "name slug image") // NOUVEAU
+    .populate("subUniverse", "name slug image")
+    .sort({ createdAt: -1 })
+    .limit(8);
+  res.json(products);
+});
+
+// @desc    Get destockage products
+// @route   GET /api/products/destockage
+// @access  Public
+const getDestockageProducts = asyncHandler(async (req, res) => {
+  const products = await Product.find({ isDestockage: true, status: "active" })
+    .populate("universe", "name slug image")
+    .populate("subUniverse", "name slug image")
+    .sort({ createdAt: -1 });
+  res.json(products);
+});
+
+// @desc    Get coming soon products
+// @route   GET /api/products/coming-soon
+// @access  Public
+const getComingSoonProducts = asyncHandler(async (req, res) => {
+  const products = await Product.find({ isComingSoon: true, status: "active" })
+    .populate("universe", "name slug image")
+    .populate("subUniverse", "name slug image")
+    .sort({ availableDate: 1, createdAt: -1 });
+  res.json(products);
+});
+
+// @desc    Get new products
+// @route   GET /api/products/new
+// @access  Public
+const getNewProducts = asyncHandler(async (req, res) => {
+  const products = await Product.find({ isNewProduct: true, status: "active", isComingSoon: false })
+    .populate("universe", "name slug image")
+    .populate("subUniverse", "name slug image")
     .sort({ createdAt: -1 })
     .limit(8);
   res.json(products);
@@ -508,11 +627,16 @@ export {
   updateProduct,
   deleteProduct,
   toggleProductFeatured,
+  toggleProductDestockage,
+  toggleProductComingSoon,
   updateProductStatus,
   updateProductUniverse,
-  updateProductSubUniverse, // NOUVEAU
+  updateProductSubUniverse,
   duplicateProduct,
   createProductReview,
   getTopProducts,
   getFeaturedProducts,
+  getDestockageProducts,
+  getComingSoonProducts,
+  getNewProducts,
 };

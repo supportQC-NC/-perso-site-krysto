@@ -1,72 +1,180 @@
-import { apiSlice } from './apiSlice';
-import { USERS_URL } from '../constants';
+import { apiSlice } from "./apiSlice";
 
 export const userApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    // ==========================================
+    // AUTH ENDPOINTS
+    // ==========================================
+
     login: builder.mutation({
       query: (data) => ({
-        url: `${USERS_URL}/login`,  // ← Changé de /auth à /login
-        method: 'POST',
+        url: "/api/users/login",
+        method: "POST",
         body: data,
       }),
     }),
+
     register: builder.mutation({
       query: (data) => ({
-        url: `${USERS_URL}`,
-        method: 'POST',
+        url: "/api/users",
+        method: "POST",
         body: data,
       }),
     }),
+
     logout: builder.mutation({
       query: () => ({
-        url: `${USERS_URL}/logout`,
-        method: 'POST',
+        url: "/api/users/logout",
+        method: "POST",
       }),
     }),
-    profile: builder.mutation({
-      query: (data) => ({
-        url: `${USERS_URL}/profile`,
-        method: 'PUT',
-        body: data,
-      }),
-    }),
-    getUsers: builder.query({
+
+    // ==========================================
+    // USER PROFILE ENDPOINTS
+    // ==========================================
+
+    getProfile: builder.query({
       query: () => ({
-        url: USERS_URL,
+        url: "/api/users/profile",
       }),
-      providesTags: ['User'],
-      keepUnusedDataFor: 5,
+      providesTags: ["User"],
     }),
-    deleteUser: builder.mutation({
-      query: (userId) => ({
-        url: `${USERS_URL}/${userId}`,
-        method: 'DELETE',
-      }),
-    }),
-    getUserDetails: builder.query({
-      query: (id) => ({
-        url: `${USERS_URL}/${id}`,
-      }),
-      keepUnusedDataFor: 5,
-    }),
-    updateUser: builder.mutation({
+
+    updateProfile: builder.mutation({
       query: (data) => ({
-        url: `${USERS_URL}/${data.userId}`,
-        method: 'PUT',
+        url: "/api/users/profile",
+        method: "PUT",
         body: data,
       }),
-      invalidatesTags: ['User'],
+      invalidatesTags: ["User"],
+    }),
+
+    // ==========================================
+    // ADMIN - BASIC USER MANAGEMENT
+    // ==========================================
+
+    getUsers: builder.query({
+      query: (params) => ({
+        url: "/api/users",
+        params,
+      }),
+      providesTags: ["User"],
+      keepUnusedDataFor: 5,
+    }),
+
+    getUserById: builder.query({
+      query: (id) => ({
+        url: `/api/users/${id}`,
+      }),
+      providesTags: (result, error, id) => [{ type: "User", id }],
+    }),
+
+    updateUser: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/api/users/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    deleteUser: builder.mutation({
+      query: (id) => ({
+        url: `/api/users/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    // ==========================================
+    // ADMIN - PRO MANAGEMENT
+    // ==========================================
+
+    // Obtenir les stats Pro
+    getUserProStats: builder.query({
+      query: () => ({
+        url: "/api/users/pro-stats",
+      }),
+      providesTags: ["User"],
+    }),
+
+    // Obtenir tous les utilisateurs Pro
+    getProUsers: builder.query({
+      query: (params) => ({
+        url: "/api/users/pro",
+        params,
+      }),
+      providesTags: ["User"],
+    }),
+
+    // Passer un utilisateur en Pro
+    setUserAsPro: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/api/users/${id}/set-pro`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    // Mettre à jour les infos Pro
+    updateUserProInfo: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `/api/users/${id}/pro-info`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    // Retirer le statut Pro
+    removeUserPro: builder.mutation({
+      query: (id) => ({
+        url: `/api/users/${id}/remove-pro`,
+        method: "PUT",
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    // Suspendre un compte Pro
+    suspendUserPro: builder.mutation({
+      query: (id) => ({
+        url: `/api/users/${id}/suspend-pro`,
+        method: "PUT",
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    // Réactiver un compte Pro
+    reactivateUserPro: builder.mutation({
+      query: (id) => ({
+        url: `/api/users/${id}/reactivate-pro`,
+        method: "PUT",
+      }),
+      invalidatesTags: ["User"],
     }),
   }),
 });
 
 export const {
+  // Auth
   useLoginMutation,
-  useLogoutMutation,
   useRegisterMutation,
-  useProfileMutation,
+  useLogoutMutation,
+  // Profile
+  useGetProfileQuery,
+  useUpdateProfileMutation,
+  // Admin - Basic
   useGetUsersQuery,
-  useDeleteUserMutation,
+  useGetUserByIdQuery,
   useUpdateUserMutation,
-  useGetUserDetailsQuery,
+  useDeleteUserMutation,
+  // Admin - Pro Management
+  useGetUserProStatsQuery,
+  useGetProUsersQuery,
+  useSetUserAsProMutation,
+  useUpdateUserProInfoMutation,
+  useRemoveUserProMutation,
+  useSuspendUserProMutation,
+  useReactivateUserProMutation,
 } = userApiSlice;
