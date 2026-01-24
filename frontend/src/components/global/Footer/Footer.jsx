@@ -6,6 +6,7 @@ import {
   FiPhone,
   FiMapPin,
 } from "react-icons/fi";
+import { FaTiktok } from "react-icons/fa";
 import "./Footer.css";
 
 const Footer = () => {
@@ -34,12 +35,12 @@ const Footer = () => {
               <FiFacebook />
             </a>
             <a
-              href="https://www.instagram.com/krysto.nc/"
+              href="https://www.tiktok.com/@krysto_nc"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Instagram"
+              aria-label="TikTok"
             >
-              <FiInstagram />
+              <FaTiktok />
             </a>
           </div>
         </div>

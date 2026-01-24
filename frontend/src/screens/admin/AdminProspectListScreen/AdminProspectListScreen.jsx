@@ -10,7 +10,6 @@ import {
   FiChevronRight,
   FiAlertCircle,
   FiMail,
-  FiClock,
   FiCheckCircle,
   FiXCircle,
   FiUserCheck,
@@ -22,8 +21,6 @@ import {
   FiTrendingUp,
   FiUserX,
   FiGlobe,
-  FiPlus,
-  FiCheck,
 } from "react-icons/fi";
 import {
   useGetProspectsQuery,
@@ -33,7 +30,6 @@ import {
   useBulkDeleteProspectsMutation,
   useMarkProspectAsConvertedMutation,
   useBulkAddTagsToProspectsMutation,
-  useLazyExportProspectsQuery,
 } from "../../../slices/prospectApiSlice";
 import { toast } from "react-toastify";
 import "./AdminProspectListScreen.css";
@@ -55,6 +51,9 @@ const AdminProspectListScreen = () => {
   // États de sélection
   const [selectedIds, setSelectedIds] = useState([]);
   const [selectAll, setSelectAll] = useState(false);
+
+  // État export
+  const [isExporting, setIsExporting] = useState(false);
 
   // États des modales
   const [viewModal, setViewModal] = useState({ open: false, prospect: null });
@@ -113,8 +112,6 @@ const AdminProspectListScreen = () => {
     useMarkProspectAsConvertedMutation();
   const [bulkAddTags, { isLoading: isAddingTags }] =
     useBulkAddTagsToProspectsMutation();
-  const [triggerExport, { isLoading: isExporting }] =
-    useLazyExportProspectsQuery();
 
   // Mettre à jour l'URL quand les filtres changent
   useEffect(() => {
@@ -281,28 +278,135 @@ const AdminProspectListScreen = () => {
     }
   };
 
-  // Export CSV
+  // Export CSV - Tous les prospects avec filtres appliqués
   const handleExport = async () => {
+    setIsExporting(true);
+
     try {
-      const result = await triggerExport({
-        status: statusFilter || undefined,
-        source: sourceFilter || undefined,
-      }).unwrap();
+      // Construire l'URL avec les filtres actuels
+      let url = "/api/prospects?limit=50000";
+      if (statusFilter) url += `&status=${statusFilter}`;
+      if (sourceFilter) url += `&source=${sourceFilter}`;
+      if (keyword) url += `&email=${encodeURIComponent(keyword)}`;
 
-      // Créer et télécharger le fichier CSV
-      const blob = new Blob([result], { type: "text/csv" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `prospects-${new Date().toISOString().split("T")[0]}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
+      // Appel API pour récupérer TOUS les prospects avec les filtres
+      const response = await fetch(url, {
+        credentials: "include",
+      });
 
-      toast.success("Export réussi");
+      if (!response.ok) {
+        throw new Error("Erreur lors de la récupération des données");
+      }
+
+      const data = await response.json();
+      const dataToExport = data.prospects || [];
+
+      if (dataToExport.length === 0) {
+        toast.error("Aucune donnée à exporter");
+        setIsExporting(false);
+        return;
+      }
+
+      // Générer le CSV
+      const headers = [
+        "Email",
+        "Statut",
+        "Source",
+        "Tags",
+        "Date inscription",
+        "Date désabonnement",
+        "Date conversion",
+        "Adresse IP",
+      ];
+
+      const getStatusLabel = (status) => {
+        const labels = {
+          active: "Actif",
+          unsubscribed: "Désabonné",
+          bounced: "Email invalide",
+          converted: "Converti",
+        };
+        return labels[status] || status;
+      };
+
+      const getSourceLabelExport = (source) => {
+        const labels = {
+          landing_page: "Page d'accueil",
+          footer: "Footer",
+          popup: "Pop-up",
+          checkout: "Commande",
+          import: "Import",
+          manual: "Manuel",
+        };
+        return labels[source] || source;
+      };
+
+      const formatDateExport = (date) => {
+        if (!date) return "";
+        return new Date(date).toLocaleDateString("fr-FR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        });
+      };
+
+      const escapeCSV = (value) => {
+        if (value === null || value === undefined) return "";
+        const strValue = String(value);
+        if (
+          strValue.includes(";") ||
+          strValue.includes('"') ||
+          strValue.includes("\n")
+        ) {
+          return `"${strValue.replace(/"/g, '""')}"`;
+        }
+        return strValue;
+      };
+
+      const csvRows = [
+        headers.join(";"),
+        ...dataToExport.map((prospect) => {
+          const row = [
+            escapeCSV(prospect.email),
+            escapeCSV(getStatusLabel(prospect.status)),
+            escapeCSV(getSourceLabelExport(prospect.source)),
+            escapeCSV((prospect.tags || []).join(", ")),
+            escapeCSV(formatDateExport(prospect.subscribedAt)),
+            escapeCSV(formatDateExport(prospect.unsubscribedAt)),
+            escapeCSV(formatDateExport(prospect.convertedAt)),
+            escapeCSV(prospect.ipAddress),
+          ];
+          return row.join(";");
+        }),
+      ];
+
+      // BOM UTF-8 pour Excel + contenu CSV
+      const csvContent = "\uFEFF" + csvRows.join("\n");
+
+      // Créer et télécharger le fichier
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+
+      // Nom du fichier avec date et filtres
+      let filename = `prospects`;
+      if (statusFilter) filename += `-${statusFilter}`;
+      if (sourceFilter) filename += `-${sourceFilter}`;
+      filename += `-${new Date().toISOString().split("T")[0]}.csv`;
+
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+
+      toast.success(`${dataToExport.length} prospect(s) exporté(s)`);
     } catch (err) {
-      toast.error(err?.data?.message || "Erreur lors de l'export");
+      console.error("Export error:", err);
+      toast.error("Erreur lors de l'export");
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -357,6 +461,11 @@ const AdminProspectListScreen = () => {
   const totalPages = prospectsData?.totalPages || 1;
   const totalProspects = prospectsData?.total || 0;
 
+  // Compter les filtres actifs
+  const activeFiltersCount = [keyword, statusFilter, sourceFilter].filter(
+    Boolean,
+  ).length;
+
   return (
     <div className="prospect-list">
       {/* Header */}
@@ -371,10 +480,18 @@ const AdminProspectListScreen = () => {
               className="btn btn--outline"
               onClick={handleExport}
               disabled={isExporting}
-              title="Exporter en CSV"
+              title={
+                activeFiltersCount > 0
+                  ? "Exporter avec filtres"
+                  : "Exporter tous les prospects"
+              }
             >
               <FiDownload />
-              {isExporting ? "Export..." : "Exporter"}
+              {isExporting
+                ? "Export..."
+                : activeFiltersCount > 0
+                  ? `Exporter (filtré)`
+                  : "Exporter tout"}
             </button>
             <button
               className="btn btn--secondary"
@@ -485,6 +602,11 @@ const AdminProspectListScreen = () => {
         </div>
 
         <div className="prospect-list__filter-actions">
+          {activeFiltersCount > 0 && (
+            <span className="filter-count">
+              {activeFiltersCount} filtre(s) actif(s)
+            </span>
+          )}
           <button
             className="btn btn--outline btn--sm"
             onClick={handleResetFilters}
@@ -542,7 +664,7 @@ const AdminProspectListScreen = () => {
             <FiMail className="prospect-list__empty-icon" />
             <h3>Aucun prospect trouvé</h3>
             <p>Aucun prospect ne correspond à vos critères.</p>
-            {(keyword || statusFilter || sourceFilter) && (
+            {activeFiltersCount > 0 && (
               <button
                 className="btn btn--secondary"
                 onClick={handleResetFilters}

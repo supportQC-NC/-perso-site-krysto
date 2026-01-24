@@ -184,6 +184,22 @@
   display: flex;
   justify-content: flex-end;
 }
+/* Filter count */
+.filter-count {
+  font-size: 0.8rem;
+  color: var(--primary);
+  font-weight: 500;
+  padding: 4px 10px;
+  background: var(--primary-100);
+  border-radius: var(--radius-full);
+}
+
+.prospect-list__filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-sm);
+}
 
 /* Bulk Actions */
 .prospect-list__bulk-actions {

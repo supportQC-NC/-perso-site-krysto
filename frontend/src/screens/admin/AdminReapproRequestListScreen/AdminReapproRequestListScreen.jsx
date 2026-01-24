@@ -17,11 +17,9 @@ import {
   FiTruck,
   FiAlertTriangle,
   FiUser,
-  FiMapPin,
   FiCalendar,
   FiMessageSquare,
   FiFileText,
-  FiArrowRight,
   FiEdit,
   FiShoppingCart,
 } from "react-icons/fi";
