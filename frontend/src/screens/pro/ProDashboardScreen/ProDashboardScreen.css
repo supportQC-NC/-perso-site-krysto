@@ -1,0 +1,212 @@
+/* ==================== PRO DASHBOARD ==================== */
+.pro-dashboard__header {
+  margin-bottom: var(--space-xl);
+}
+
+.pro-dashboard__header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: var(--space-xs);
+}
+
+.pro-dashboard__header p {
+  color: var(--gray-500);
+}
+
+/* Stats */
+.pro-dashboard__stats {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.pro-stat-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.pro-stat-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  font-size: 1.5rem;
+}
+
+.pro-stat-card__icon--primary {
+  background: var(--primary-100);
+  color: var(--primary);
+}
+
+.pro-stat-card__icon--success {
+  background: var(--success-light);
+  color: var(--success);
+}
+
+.pro-stat-card__icon--warning {
+  background: var(--warning-light);
+  color: var(--warning);
+}
+
+.pro-stat-card__icon--secondary {
+  background: var(--secondary-100);
+  color: var(--secondary-700);
+}
+
+.pro-stat-card__content {
+  display: flex;
+  flex-direction: column;
+}
+
+.pro-stat-card__value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.pro-stat-card__label {
+  font-size: 0.85rem;
+  color: var(--gray-500);
+}
+
+/* Sections */
+.pro-dashboard__section {
+  margin-bottom: var(--space-xl);
+}
+
+.pro-dashboard__section h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--gray-900);
+  margin-bottom: var(--space-md);
+}
+
+/* Actions */
+.pro-dashboard__actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-md);
+}
+
+.pro-action-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--white);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  color: var(--gray-700);
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.pro-action-card:hover {
+  background: var(--secondary);
+  color: var(--primary-900);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.pro-action-card svg {
+  font-size: 1.25rem;
+}
+
+/* Table */
+.pro-dashboard__table-wrapper {
+  overflow-x: auto;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.pro-dashboard__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.pro-dashboard__table th,
+.pro-dashboard__table td {
+  padding: var(--space-md);
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.pro-dashboard__table th {
+  background: var(--gray-50);
+  color: var(--gray-600);
+  font-weight: 600;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.pro-dashboard__table td {
+  border-bottom: 1px solid var(--gray-100);
+  color: var(--gray-700);
+}
+
+.pro-dashboard__table tr:last-child td {
+  border-bottom: none;
+}
+
+/* Status */
+.pro-status {
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+}
+
+.pro-status--pending {
+  background: var(--warning-light);
+  color: var(--warning);
+}
+
+.pro-status--confirmed {
+  background: var(--info-light);
+  color: var(--info);
+}
+
+.pro-status--delivered {
+  background: var(--success-light);
+  color: var(--success);
+}
+
+.pro-status--cancelled {
+  background: var(--error-light);
+  color: var(--error);
+}
+
+.pro-dashboard__empty {
+  padding: var(--space-xl);
+  text-align: center;
+  color: var(--gray-500);
+  background: var(--white);
+  border-radius: var(--radius-lg);
+}
+
+/* ==================== TABLET ==================== */
+@media (min-width: 640px) {
+  .pro-dashboard__stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pro-dashboard__actions {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ==================== DESKTOP ==================== */
+@media (min-width: 1024px) {
+  .pro-dashboard__stats {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

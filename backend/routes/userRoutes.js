@@ -17,6 +17,7 @@ import {
   reactivateUserPro,
   getUserProStats,
   getProUsers,
+  getUserStats, // NOUVEAU
 } from "../controllers/userController.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
 
@@ -39,7 +40,8 @@ router.put("/profile", protect, updateUserProfile);
 // ADMIN ROUTES
 // ==========================================
 
-// Stats Pro (doit être avant /:id)
+// Stats (doivent être avant /:id)
+router.get("/stats", protect, admin, getUserStats); // NOUVEAU
 router.get("/pro-stats", protect, admin, getUserProStats);
 
 // Liste des utilisateurs Pro

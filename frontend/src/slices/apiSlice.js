@@ -1,18 +1,24 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { BASE_URL } from "../constants";
 
-
-
 export const apiSlice = createApi({
-  baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
-  tagTypes: [ "Product",
+  baseQuery: fetchBaseQuery({ 
+    baseUrl: BASE_URL,
+    credentials: "include", // Important pour les cookies d'authentification
+  }),
+  tagTypes: [
+    "Product",
     "User",
     "Order",
     "Universe",
-    "SubUniverse", 
-    "Prospect",   
+    "SubUniverse",
+    "Prospect",
     "Contact",
-    "Mailing", ],
+    "Mailing",
+    "NewsletterCampaign",
+    "ProRequest",
+    "ProOrder",
+    "ReapproRequest",
+  ],
   endpoints: (builder) => ({}),
 });
-

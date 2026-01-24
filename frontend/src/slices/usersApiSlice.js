@@ -69,6 +69,15 @@ export const userApiSlice = apiSlice.injectEndpoints({
       providesTags: (result, error, id) => [{ type: "User", id }],
     }),
 
+    // NOUVEAU - Stats générales
+    getUserStats: builder.query({
+      query: () => ({
+        url: "/api/users/stats",
+      }),
+      providesTags: ["User"],
+      keepUnusedDataFor: 5,
+    }),
+
     updateUser: builder.mutation({
       query: ({ id, ...data }) => ({
         url: `/api/users/${id}`,
@@ -167,6 +176,7 @@ export const {
   // Admin - Basic
   useGetUsersQuery,
   useGetUserByIdQuery,
+  useGetUserStatsQuery, // NOUVEAU
   useUpdateUserMutation,
   useDeleteUserMutation,
   // Admin - Pro Management

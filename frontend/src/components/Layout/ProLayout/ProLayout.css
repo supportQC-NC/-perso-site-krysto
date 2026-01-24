@@ -1,0 +1,228 @@
+/* ==================== PRO LAYOUT ==================== */
+.pro-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--gray-100);
+}
+
+/* ==================== SIDEBAR ==================== */
+.pro-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 260px;
+  background: linear-gradient(
+    180deg,
+    var(--primary-800) 0%,
+    var(--primary-900) 100%
+  );
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform var(--transition-base);
+  z-index: 1000;
+}
+
+.pro-sidebar--open {
+  transform: translateX(0);
+}
+
+.pro-sidebar__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-lg);
+  border-bottom: 1px solid var(--primary-700);
+}
+
+.pro-sidebar__logo {
+  height: 32px;
+  filter: brightness(0) invert(1);
+}
+
+.pro-sidebar__header span {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--secondary);
+}
+
+.pro-sidebar__close {
+  display: flex;
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/* Info Pro */
+.pro-sidebar__info {
+  padding: var(--space-md) var(--space-lg);
+  background: var(--primary-700);
+  border-bottom: 1px solid var(--primary-600);
+}
+
+.pro-sidebar__company {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: var(--space-xs);
+}
+
+.pro-sidebar__discount {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 0.85rem;
+  color: var(--secondary);
+}
+
+/* Navigation */
+.pro-sidebar__nav {
+  flex: 1;
+  padding: var(--space-md);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.pro-sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  color: var(--gray-300);
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  transition: all var(--transition-fast);
+}
+
+.pro-sidebar__link:hover {
+  background: var(--primary-700);
+  color: var(--white);
+}
+
+.pro-sidebar__link.active {
+  background: var(--secondary);
+  color: var(--primary-900);
+}
+
+/* Footer sidebar */
+.pro-sidebar__footer {
+  padding: var(--space-md);
+  border-top: 1px solid var(--primary-700);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.pro-sidebar__logout {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  width: 100%;
+}
+
+.pro-sidebar__logout:hover {
+  background: var(--error);
+  color: var(--white);
+}
+
+/* ==================== OVERLAY ==================== */
+.pro-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+/* ==================== MAIN ==================== */
+.pro-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.pro-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+}
+
+.pro-header__burger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--gray-700);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+}
+
+.pro-header__burger:hover {
+  background: var(--gray-100);
+}
+
+.pro-header__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.9rem;
+  color: var(--gray-600);
+}
+
+.pro-header__badge {
+  padding: 2px 8px;
+  background: var(--secondary);
+  color: var(--primary-900);
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: var(--radius-full);
+}
+
+.pro-content {
+  flex: 1;
+  padding: var(--space-lg);
+}
+
+/* ==================== DESKTOP ==================== */
+@media (min-width: 1024px) {
+  .pro-sidebar {
+    transform: translateX(0);
+  }
+
+  .pro-sidebar__close {
+    display: none;
+  }
+
+  .pro-overlay {
+    display: none;
+  }
+
+  .pro-main {
+    margin-left: 260px;
+  }
+
+  .pro-header__burger {
+    display: none;
+  }
+}

@@ -1,5 +1,7 @@
 const subUniverses = [
-  // Maison & Déco
+  // ==========================================
+  // MAISON & DÉCO
+  // ==========================================
   {
     name: "Décoration intérieure",
     description: "Objets décoratifs uniques pour embellir votre intérieur avec style et conscience écologique.",
@@ -24,8 +26,18 @@ const subUniverses = [
     isActive: true,
     displayOrder: 3,
   },
+  {
+    name: "Rangement",
+    description: "Boîtes, paniers et solutions de rangement en plastique recyclé.",
+    image: "/images/subuniverses/rangement.jpg",
+    universeName: "Maison & Déco",
+    isActive: false, // Inactif pour test
+    displayOrder: 4,
+  },
 
-  // Salle de bain
+  // ==========================================
+  // SALLE DE BAIN
+  // ==========================================
   {
     name: "Soins capillaires",
     description: "Peignes et accessoires pour prendre soin de vos cheveux naturellement.",
@@ -42,8 +54,18 @@ const subUniverses = [
     isActive: true,
     displayOrder: 2,
   },
+  {
+    name: "Hygiène",
+    description: "Accessoires d'hygiène quotidienne éco-responsables.",
+    image: "/images/subuniverses/hygiene.jpg",
+    universeName: "Salle de bain",
+    isActive: false, // Inactif pour test
+    displayOrder: 3,
+  },
 
-  // Accessoires Mode
+  // ==========================================
+  // ACCESSOIRES MODE
+  // ==========================================
   {
     name: "Lunetterie",
     description: "Montures de lunettes de soleil stylées et éco-responsables.",
@@ -60,8 +82,18 @@ const subUniverses = [
     isActive: true,
     displayOrder: 2,
   },
+  {
+    name: "Sacs & Pochettes",
+    description: "Sacs à main et pochettes en matériaux recyclés.",
+    image: "/images/subuniverses/sacs-pochettes.jpg",
+    universeName: "Accessoires Mode",
+    isActive: false, // Inactif pour test
+    displayOrder: 3,
+  },
 
-  // Jeux & Loisirs
+  // ==========================================
+  // JEUX & LOISIRS
+  // ==========================================
   {
     name: "Jeux de société",
     description: "Jeux classiques revisités en version durable pour toute la famille.",
@@ -78,8 +110,18 @@ const subUniverses = [
     isActive: true,
     displayOrder: 2,
   },
+  {
+    name: "Activités créatives",
+    description: "Kits et accessoires pour les loisirs créatifs.",
+    image: "/images/subuniverses/activites-creatives.jpg",
+    universeName: "Jeux & Loisirs",
+    isActive: true,
+    displayOrder: 3,
+  },
 
-  // Bureau
+  // ==========================================
+  // BUREAU
+  // ==========================================
   {
     name: "Écriture",
     description: "Stylos, crayons et accessoires d'écriture écologiques.",
@@ -96,8 +138,18 @@ const subUniverses = [
     isActive: true,
     displayOrder: 2,
   },
+  {
+    name: "Fournitures scolaires",
+    description: "Règles, trousses et accessoires pour l'école.",
+    image: "/images/subuniverses/fournitures-scolaires.jpg",
+    universeName: "Bureau",
+    isActive: true,
+    displayOrder: 3,
+  },
 
-  // Bijoux
+  // ==========================================
+  // BIJOUX
+  // ==========================================
   {
     name: "Bagues & Bracelets",
     description: "Bagues et bracelets uniques aux couleurs vives et naturelles.",
@@ -114,8 +166,18 @@ const subUniverses = [
     isActive: true,
     displayOrder: 2,
   },
+  {
+    name: "Bijoux Homme",
+    description: "Bracelets et accessoires pour homme en matériaux recyclés.",
+    image: "/images/subuniverses/bijoux-homme.jpg",
+    universeName: "Bijoux",
+    isActive: true,
+    displayOrder: 3,
+  },
 
-  // Coffrets Cadeaux
+  // ==========================================
+  // COFFRETS CADEAUX
+  // ==========================================
   {
     name: "Coffrets thématiques",
     description: "Coffrets cadeaux composés autour de thèmes spécifiques.",
@@ -131,6 +193,38 @@ const subUniverses = [
     universeName: "Coffrets Cadeaux",
     isActive: true,
     displayOrder: 2,
+  },
+  {
+    name: "Coffrets Entreprise",
+    description: "Cadeaux d'entreprise éco-responsables personnalisables.",
+    image: "/images/subuniverses/coffrets-entreprise.jpg",
+    universeName: "Coffrets Cadeaux",
+    isActive: true,
+    displayOrder: 3,
+  },
+
+  // ==========================================
+  // COLLECTION LIMITÉE (univers inactif)
+  // ==========================================
+  {
+    name: "Collaborations Artistes",
+    description: "Créations en partenariat avec des artistes locaux.",
+    image: "/images/subuniverses/collaborations-artistes.jpg",
+    universeName: "Collection Limitée",
+    isActive: true,
+    displayOrder: 1,
+  },
+
+  // ==========================================
+  // MOBILIER (univers inactif)
+  // ==========================================
+  {
+    name: "Petits meubles",
+    description: "Tables basses, tabourets et petits meubles d'appoint.",
+    image: "/images/subuniverses/petits-meubles.jpg",
+    universeName: "Mobilier",
+    isActive: true,
+    displayOrder: 1,
   },
 ];
 

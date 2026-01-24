@@ -565,6 +565,75 @@ const getProUsers = asyncHandler(async (req, res) => {
   });
 });
 
+// export {
+//   authUser,
+//   registerUser,
+//   logoutUser,
+//   getUserProfile,
+//   updateUserProfile,
+//   getUsers,
+//   getUserById,
+//   deleteUser,
+//   updateUser,
+//   // Pro management
+//   setUserAsPro,
+//   updateUserProInfo,
+//   removeUserPro,
+//   suspendUserPro,
+//   reactivateUserPro,
+//   getUserProStats,
+//   getProUsers,
+// };
+
+// @desc    Obtenir les statistiques générales des utilisateurs
+// @route   GET /api/users/stats
+// @access  Private/Admin
+const getUserStats = asyncHandler(async (req, res) => {
+  const [
+    totalUsers,
+    totalAdmins,
+    totalPro,
+    proPending,
+    proApproved,
+    proSuspended,
+    newsletterSubscribed,
+  ] = await Promise.all([
+    User.countDocuments(),
+    User.countDocuments({ isAdmin: true }),
+    User.countDocuments({ isPro: true }),
+    User.countDocuments({ proStatus: "pending" }),
+    User.countDocuments({ proStatus: "approved" }),
+    User.countDocuments({ proStatus: "suspended" }),
+    User.countDocuments({ newsletterSubscribed: true }),
+  ]);
+
+  // Inscriptions des 30 derniers jours
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const recentUsers = await User.countDocuments({
+    createdAt: { $gte: thirtyDaysAgo },
+  });
+
+  // Par type de partenariat Pro
+  const byPartnershipType = await User.aggregate([
+    { $match: { isPro: true } },
+    { $group: { _id: "$proInfo.partnershipType", count: { $sum: 1 } } },
+    { $sort: { count: -1 } },
+  ]);
+
+  res.json({
+    totalUsers,
+    totalAdmins,
+    totalPro,
+    proPending,
+    proApproved,
+    proSuspended,
+    newsletterSubscribed,
+    recentUsers,
+    byPartnershipType,
+  });
+});
+
 export {
   authUser,
   registerUser,
@@ -583,4 +652,5 @@ export {
   reactivateUserPro,
   getUserProStats,
   getProUsers,
+  getUserStats, // NOUVEAU
 };

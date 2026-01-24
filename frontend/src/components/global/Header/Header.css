@@ -1,0 +1,333 @@
+/* ==================== HEADER ==================== */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+}
+
+.header__container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-md);
+  gap: var(--space-md);
+}
+
+/* Logo */
+.header__logo img {
+  height: 40px;
+  width: auto;
+}
+
+/* Navigation */
+.header__nav {
+  display: none;
+  flex-direction: column;
+  position: fixed;
+  top: 72px;
+  left: 0;
+  right: 0;
+  background: var(--white);
+  padding: var(--space-lg);
+  gap: var(--space-sm);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-100%);
+  opacity: 0;
+  transition:
+    transform var(--transition-base),
+    opacity var(--transition-base);
+}
+
+.header__nav--open {
+  display: flex;
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.header__link {
+  padding: var(--space-sm) var(--space-md);
+  color: var(--gray-700);
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.header__link:hover {
+  color: var(--primary);
+  background: var(--gray-100);
+}
+
+/* Actions */
+.header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* Panier */
+.header__cart {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--gray-700);
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+}
+
+.header__cart:hover {
+  color: var(--primary);
+  background: var(--gray-100);
+}
+
+.header__cart svg {
+  font-size: 1.25rem;
+}
+
+.header__cart-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--white);
+  background: var(--secondary);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* User menu */
+.header__user {
+  position: relative;
+}
+
+.header__user-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs);
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-full);
+  transition: background var(--transition-fast);
+}
+
+.header__user-btn:hover {
+  background: var(--gray-100);
+}
+
+.header__avatar {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  color: var(--white);
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: var(--radius-full);
+}
+
+.header__chevron {
+  color: var(--gray-500);
+  transition: transform var(--transition-fast);
+}
+
+.header__chevron--open {
+  transform: rotate(180deg);
+}
+
+/* Login button */
+.header__login {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  color: var(--white);
+  background: var(--primary);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: background var(--transition-fast);
+}
+
+.header__login:hover {
+  background: var(--primary-600);
+  color: var(--white);
+}
+
+.header__login svg {
+  font-size: 1.1rem;
+}
+
+/* Dropdown */
+.header__dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-sm));
+  right: 0;
+  min-width: 220px;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  padding: var(--space-sm);
+  animation: dropdownFade 0.2s ease;
+}
+
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header__dropdown-header {
+  padding: var(--space-sm) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.header__dropdown-name {
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+.header__dropdown-email {
+  font-size: 0.8rem;
+  color: var(--gray-500);
+}
+
+.header__badge {
+  display: inline-block;
+  margin-top: var(--space-xs);
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  width: fit-content;
+}
+
+.header__badge--admin {
+  background: var(--error-light);
+  color: var(--error);
+}
+
+.header__badge--pro {
+  background: var(--secondary-100);
+  color: var(--secondary-700);
+}
+
+.header__dropdown-divider {
+  height: 1px;
+  background: var(--gray-200);
+  margin: var(--space-xs) 0;
+}
+
+.header__dropdown-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  color: var(--gray-700);
+  font-size: 0.9rem;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.header__dropdown-link:hover {
+  background: var(--gray-100);
+  color: var(--gray-900);
+}
+
+.header__dropdown-link--pro:hover {
+  background: var(--secondary-100);
+  color: var(--secondary-700);
+}
+
+.header__dropdown-link--admin:hover {
+  background: var(--primary-100);
+  color: var(--primary-700);
+}
+
+.header__dropdown-link--logout:hover {
+  background: var(--error-light);
+  color: var(--error);
+}
+
+/* Burger */
+.header__burger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--gray-700);
+  font-size: 1.5rem;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.header__burger:hover {
+  background: var(--gray-100);
+  color: var(--primary);
+}
+
+/* Overlay */
+.header__overlay {
+  position: fixed;
+  inset: 72px 0 0 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: -1;
+}
+
+/* ==================== DESKTOP ==================== */
+@media (min-width: 768px) {
+  .header__nav {
+    display: flex;
+    flex-direction: row;
+    position: static;
+    padding: 0;
+    gap: var(--space-xs);
+    box-shadow: none;
+    transform: none;
+    opacity: 1;
+    background: transparent;
+  }
+
+  .header__burger {
+    display: none;
+  }
+
+  .header__overlay {
+    display: none;
+  }
+
+  .header__logo img {
+    height: 48px;
+  }
+}

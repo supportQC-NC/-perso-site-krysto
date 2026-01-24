@@ -5,7 +5,7 @@ import Product from "../models/productModel.js";
 // @route   GET /api/products
 // @access  Public
 const getProducts = asyncHandler(async (req, res) => {
-  const pageSize = Number(req.query.pageSize) || 12;
+  const pageSize = Number(req.query.pageSize) || 10;
   const page = Number(req.query.pageNumber) || 1;
 
   // Filtres
@@ -27,6 +27,16 @@ const getProducts = asyncHandler(async (req, res) => {
   // Filtre par sous-univers
   const subUniverse = req.query.subUniverse ? { subUniverse: req.query.subUniverse } : {};
 
+  // Filtre par stock
+  let stockFilter = {};
+  if (req.query.stock === "low") {
+    stockFilter = { countInStock: { $gt: 0, $lte: 5 } };
+  } else if (req.query.stock === "out") {
+    stockFilter = { countInStock: 0 };
+  } else if (req.query.stock === "available") {
+    stockFilter = { countInStock: { $gt: 0 } };
+  }
+
   // Filtres pour les nouveaux flags
   const isDestockage = req.query.isDestockage !== undefined 
     ? { isDestockage: req.query.isDestockage === "true" } 
@@ -47,6 +57,7 @@ const getProducts = asyncHandler(async (req, res) => {
     ...status, 
     ...universe, 
     ...subUniverse,
+    ...stockFilter,
     ...isDestockage,
     ...isComingSoon,
     ...isNewProduct,
@@ -57,9 +68,9 @@ const getProducts = asyncHandler(async (req, res) => {
   const products = await Product.find(filters)
     .populate("universe", "name slug image")
     .populate("subUniverse", "name slug image")
-    .limit(pageSize)
+    .sort({ createdAt: -1 })
     .skip(pageSize * (page - 1))
-    .sort({ createdAt: -1 });
+    .limit(pageSize);
 
   res.json({
     products,
@@ -89,14 +100,15 @@ const getProductById = asyncHandler(async (req, res) => {
 // @route   GET /api/products/stats
 // @access  Public
 const getProductStats = asyncHandler(async (req, res) => {
-  const totalProducts = await Product.countDocuments();
-  const activeProducts = await Product.countDocuments({ status: "active" });
-  const draftProducts = await Product.countDocuments({ status: "draft" });
-  const archivedProducts = await Product.countDocuments({ status: "archived" });
-  const featuredProducts = await Product.countDocuments({ isFeatured: true });
+  const total = await Product.countDocuments();
+  const active = await Product.countDocuments({ status: "active" });
+  const draft = await Product.countDocuments({ status: "draft" });
+  const archived = await Product.countDocuments({ status: "archived" });
+  const featured = await Product.countDocuments({ isFeatured: true });
   const outOfStock = await Product.countDocuments({ countInStock: 0 });
-  const destockageProducts = await Product.countDocuments({ isDestockage: true });
-  const comingSoonProducts = await Product.countDocuments({ isComingSoon: true });
+  const lowStock = await Product.countDocuments({ countInStock: { $gt: 0, $lte: 5 } });
+  const destockage = await Product.countDocuments({ isDestockage: true });
+  const comingSoon = await Product.countDocuments({ isComingSoon: true });
   const newProducts = await Product.countDocuments({ isNewProduct: true });
 
   const byCategory = await Product.aggregate([
@@ -163,14 +175,15 @@ const getProductStats = asyncHandler(async (req, res) => {
   ]);
 
   res.json({
-    total: totalProducts,
-    active: activeProducts,
-    draft: draftProducts,
-    archived: archivedProducts,
-    featured: featuredProducts,
+    total,
+    active,
+    draft,
+    archived,
+    featured,
     outOfStock,
-    destockage: destockageProducts,
-    comingSoon: comingSoonProducts,
+    lowStock,
+    destockage,
+    comingSoon,
     newProducts,
     byCategory,
     byUniverse,
@@ -242,7 +255,6 @@ const createProduct = asyncHandler(async (req, res) => {
 
   const createdProduct = await product.save();
   
-  // Peupler l'univers et le sous-univers avant de renvoyer
   await createdProduct.populate("universe", "name slug image");
   await createdProduct.populate("subUniverse", "name slug image");
   
@@ -319,7 +331,6 @@ const updateProduct = asyncHandler(async (req, res) => {
 
     const updatedProduct = await product.save();
     
-    // Peupler l'univers et le sous-univers avant de renvoyer
     await updatedProduct.populate("universe", "name slug image");
     await updatedProduct.populate("subUniverse", "name slug image");
     
@@ -371,7 +382,6 @@ const toggleProductDestockage = asyncHandler(async (req, res) => {
 
   if (product) {
     product.isDestockage = !product.isDestockage;
-    // Si on met en destockage, on enlève le "coming soon"
     if (product.isDestockage) {
       product.isComingSoon = false;
       product.availableDate = null;
@@ -395,7 +405,6 @@ const toggleProductComingSoon = asyncHandler(async (req, res) => {
 
   if (product) {
     product.isComingSoon = !product.isComingSoon;
-    // Si on met en coming soon, on enlève le destockage
     if (product.isComingSoon) {
       product.isDestockage = false;
       product.availableDate = availableDate || null;
