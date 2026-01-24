@@ -36,6 +36,8 @@ import AdminProspectListScreen from "./screens/admin/AdminProspectListScreen/Adm
 // Pro
 import ProLayout from "./components/Layout/ProLayout/ProLayout";
 import ProDashboardScreen from "./screens/pro/ProDashboardScreen/ProDashboardScreen";
+import AdminContactListScreen from "./screens/admin/AdminContactListScreen/AdminContactListScreen";
+import AdminOrderListScreen from "./screens/admin/AdminOrderListScreen/AdminOrderListScreen";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -80,7 +82,10 @@ const router = createBrowserRouter(
           
           {/* Marketing */}
           <Route path="prospects" element={<AdminProspectListScreen />} />
-          
+          {/* <Route path="prospects" element={<AdminProspectListScreen />} /> */}
+          <Route path="contacts" element={<AdminContactListScreen />} />  
+           {/* Commandes */}
+          <Route path="orders" element={<AdminOrderListScreen />} />
         </Route>
       </Route>
 

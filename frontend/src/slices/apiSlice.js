@@ -19,6 +19,7 @@ export const apiSlice = createApi({
     "ProRequest",
     "ProOrder",
     "ReapproRequest",
+    "MailingTemplate"
   ],
   endpoints: (builder) => ({}),
 });

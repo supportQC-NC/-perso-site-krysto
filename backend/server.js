@@ -17,6 +17,7 @@ import universeRoutes from "./routes/universRoutes.js";
 import subUniverseRoutes from "./routes/subUniverseRoutes.js";
 import prospectRoutes from "./routes/prospectRoutes.js";
 import mailingRoutes from "./routes/mailingRoutes.js";
+import mailingTemplateRoutes from "./routes/maillingTemplateRoutes.js";
 import proRequestRoutes from "./routes/proRequestRoutes.js";
 import proOrderRoutes from "./routes/proOrderRoutes.js";
 import reapproRequestRoutes from "./routes/reapproRequestRoutes.js";
@@ -84,6 +85,9 @@ app.use("/api/prospects", prospectRoutes);
 
 // Campagnes Mailing
 app.use("/api/mailing", mailingRoutes);
+
+// Templates Mailing (éditeur de blocs)
+app.use("/api/mailing-templates", mailingTemplateRoutes);
 
 // Demandes de compte Pro
 app.use("/api/pro-requests", proRequestRoutes);
