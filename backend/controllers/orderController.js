@@ -2,7 +2,13 @@ import asyncHandler from "../middleware/asyncHandler.js";
 import Order from "../models/orderModel.js";
 import Product from "../models/productModel.js";
 import sendEmail from "../utils/sendEmail.js";
-import { orderConfirmationTemplate } from "../utils/emailTemplates.js";
+import { 
+  orderConfirmationTemplate,
+  orderProcessingTemplate,
+  orderShippedTemplate,
+  orderDeliveredTemplate,
+  orderCancelledTemplate
+} from "../utils/emailTemplates.js";
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -46,15 +52,18 @@ const createOrder = asyncHandler(async (req, res) => {
     "name email"
   );
 
-  // Envoyer l'email de confirmation
+  // ========================================
+  // ENVOI EMAIL CONFIRMATION DE COMMANDE
+  // ========================================
   try {
     await sendEmail({
       email: populatedOrder.user.email,
-      subject: `Commande #${populatedOrder._id} confirmée ! ✅`,
+      subject: `✅ Commande #${populatedOrder._id.toString().slice(-8).toUpperCase()} confirmée !`,
       html: orderConfirmationTemplate(populatedOrder),
     });
+    console.log(`✅ Email de confirmation de commande envoyé à ${populatedOrder.user.email}`);
   } catch (error) {
-    console.log("Erreur envoi email de commande:", error);
+    console.error("❌ Erreur envoi email de commande:", error.message);
   }
 
   res.status(201).json(createdOrder);
@@ -94,7 +103,7 @@ const getOrderById = asyncHandler(async (req, res) => {
 // @route   PUT /api/orders/:id/pay
 // @access  Private
 const updateOrderToPaid = asyncHandler(async (req, res) => {
-  const order = await Order.findById(req.params.id);
+  const order = await Order.findById(req.params.id).populate("user", "name email");
 
   if (order) {
     order.isPaid = true;
@@ -108,6 +117,21 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
     };
 
     const updatedOrder = await order.save();
+
+    // ========================================
+    // ENVOI EMAIL PAIEMENT CONFIRMÉ
+    // ========================================
+    try {
+      await sendEmail({
+        email: order.user.email,
+        subject: `💳 Paiement confirmé - Commande #${order._id.toString().slice(-8).toUpperCase()}`,
+        html: orderConfirmationTemplate(order),
+      });
+      console.log(`✅ Email de paiement confirmé envoyé à ${order.user.email}`);
+    } catch (error) {
+      console.error("❌ Erreur envoi email paiement:", error.message);
+    }
+
     res.json(updatedOrder);
   } else {
     res.status(404);
@@ -119,7 +143,7 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
 // @route   PUT /api/orders/:id/deliver
 // @access  Private/Admin
 const updateOrderToDelivered = asyncHandler(async (req, res) => {
-  const order = await Order.findById(req.params.id);
+  const order = await Order.findById(req.params.id).populate("user", "name email");
 
   if (order) {
     order.isDelivered = true;
@@ -127,6 +151,21 @@ const updateOrderToDelivered = asyncHandler(async (req, res) => {
     order.status = "Livrée";
 
     const updatedOrder = await order.save();
+
+    // ========================================
+    // ENVOI EMAIL COMMANDE LIVRÉE
+    // ========================================
+    try {
+      await sendEmail({
+        email: order.user.email,
+        subject: `🎉 Commande #${order._id.toString().slice(-8).toUpperCase()} livrée !`,
+        html: orderDeliveredTemplate(order),
+      });
+      console.log(`✅ Email de livraison envoyé à ${order.user.email}`);
+    } catch (error) {
+      console.error("❌ Erreur envoi email livraison:", error.message);
+    }
+
     res.json(updatedOrder);
   } else {
     res.status(404);
@@ -138,10 +177,11 @@ const updateOrderToDelivered = asyncHandler(async (req, res) => {
 // @route   PUT /api/orders/:id/status
 // @access  Private/Admin
 const updateOrderStatus = asyncHandler(async (req, res) => {
-  const { status } = req.body;
-  const order = await Order.findById(req.params.id);
+  const { status, trackingNumber } = req.body;
+  const order = await Order.findById(req.params.id).populate("user", "name email");
 
   if (order) {
+    const previousStatus = order.status;
     order.status = status;
 
     // Mettre à jour les flags selon le statut
@@ -155,7 +195,58 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
       order.deliveredAt = null;
     }
 
+    // Sauvegarder le numéro de suivi si fourni
+    if (trackingNumber) {
+      order.trackingNumber = trackingNumber;
+    }
+
     const updatedOrder = await order.save();
+
+    // ========================================
+    // ENVOI EMAILS SELON LE NOUVEAU STATUT
+    // ========================================
+    try {
+      let emailSubject = "";
+      let emailHtml = "";
+
+      switch (status) {
+        case "En préparation":
+          emailSubject = `📦 Commande #${order._id.toString().slice(-8).toUpperCase()} en préparation`;
+          emailHtml = orderProcessingTemplate(order);
+          break;
+
+        case "Expédiée":
+          emailSubject = `🚚 Commande #${order._id.toString().slice(-8).toUpperCase()} expédiée !`;
+          emailHtml = orderShippedTemplate(order, trackingNumber);
+          break;
+
+        case "Livrée":
+          emailSubject = `🎉 Commande #${order._id.toString().slice(-8).toUpperCase()} livrée !`;
+          emailHtml = orderDeliveredTemplate(order);
+          break;
+
+        case "Annulée":
+          emailSubject = `❌ Commande #${order._id.toString().slice(-8).toUpperCase()} annulée`;
+          emailHtml = orderCancelledTemplate(order, req.body.reason);
+          break;
+
+        default:
+          // Pas d'email pour les autres statuts
+          break;
+      }
+
+      if (emailSubject && emailHtml) {
+        await sendEmail({
+          email: order.user.email,
+          subject: emailSubject,
+          html: emailHtml,
+        });
+        console.log(`✅ Email de statut "${status}" envoyé à ${order.user.email}`);
+      }
+    } catch (error) {
+      console.error("❌ Erreur envoi email statut:", error.message);
+    }
+
     res.json(updatedOrder);
   } else {
     res.status(404);
@@ -200,7 +291,9 @@ const getOrderStats = asyncHandler(async (req, res) => {
   // Commandes par statut
   const pendingOrders = await Order.countDocuments({ status: "En attente" });
   const processingOrders = await Order.countDocuments({ status: "En préparation" });
+  const shippedOrders = await Order.countDocuments({ status: "Expédiée" });
   const deliveredOrders = await Order.countDocuments({ status: "Livrée" });
+  const cancelledOrders = await Order.countDocuments({ status: "Annulée" });
 
   // Revenus
   const revenueResult = await Order.aggregate([
@@ -230,7 +323,9 @@ const getOrderStats = asyncHandler(async (req, res) => {
     totalOrders,
     pendingOrders,
     processingOrders,
+    shippedOrders,
     deliveredOrders,
+    cancelledOrders,
     totalRevenue,
     monthlyRevenue,
     recentOrders,

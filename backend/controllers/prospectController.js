@@ -1,5 +1,7 @@
 import asyncHandler from "../middleware/asyncHandler.js";
 import Prospect from "../models/prospectModel.js";
+import sendEmail from "../utils/sendEmail.js";
+import { newsletterWelcomeTemplate } from "../utils/emailTemplates.js";
 
 // ==========================================
 // PUBLIC ROUTES
@@ -22,6 +24,20 @@ const subscribeNewsletter = asyncHandler(async (req, res) => {
       existingProspect.unsubscribedAt = null;
       await existingProspect.save();
 
+      // ========================================
+      // ENVOI EMAIL DE RÉACTIVATION
+      // ========================================
+      try {
+        await sendEmail({
+          email: existingProspect.email,
+          subject: "📬 Bon retour dans notre newsletter !",
+          html: newsletterWelcomeTemplate(existingProspect.email),
+        });
+        console.log(`✅ Email de réactivation newsletter envoyé à ${existingProspect.email}`);
+      } catch (error) {
+        console.error("❌ Erreur envoi email réactivation newsletter:", error.message);
+      }
+
       return res.status(200).json({
         message: "Votre inscription a été réactivée !",
         prospect: existingProspect,
@@ -43,6 +59,20 @@ const subscribeNewsletter = asyncHandler(async (req, res) => {
     ipAddress,
     userAgent,
   });
+
+  // ========================================
+  // ENVOI EMAIL DE BIENVENUE NEWSLETTER
+  // ========================================
+  try {
+    await sendEmail({
+      email: prospect.email,
+      subject: "📬 Bienvenue dans la newsletter Krysto !",
+      html: newsletterWelcomeTemplate(prospect.email),
+    });
+    console.log(`✅ Email de bienvenue newsletter envoyé à ${prospect.email}`);
+  } catch (error) {
+    console.error("❌ Erreur envoi email bienvenue newsletter:", error.message);
+  }
 
   res.status(201).json({
     message: "Inscription réussie ! Bienvenue dans la communauté Krysto.",

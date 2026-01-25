@@ -74,15 +74,15 @@ const Hero = () => {
       <div className="hero__content">
         <div className={`hero__inner ${isLoaded ? "hero__inner--loaded" : ""}`}>
           {/* Badge */}
-          <div className="hero__badge">
+          {/* <div className="hero__badge">
             <span className="hero__badge-dot" />
             <span>Nouvelle-Calédonie</span>
-          </div>
+          </div> */}
 
           {/* Title */}
           <h1 className="hero__title">
             <span className="hero__title-line">Nous transformons le</span>
-            <span className="hero__title-highlight">plastique océanique</span>
+            <span className="hero__title-highlight">les déchets plastique</span>
             <span className="hero__title-line">en produits durables</span>
           </h1>
 
@@ -99,30 +99,27 @@ const Hero = () => {
               Découvrir nos produits
               <FiArrowRight />
             </Link>
-            <button
-              className="hero__btn hero__btn--secondary"
-              onClick={() => scrollToSection("process")}
-            >
-              <FiPlay />
-              Notre processus
-            </button>
+            <Link to="/about" className="hero__btn hero__btn--secondary">
+              En savoir plus
+              <FiArrowRight />
+            </Link>
           </div>
 
           {/* Stats */}
           <div className="hero__stats">
             <div className="hero__stat">
-              <span className="hero__stat-value">12.5T</span>
+              <span className="hero__stat-value">1 T</span>
               <span className="hero__stat-label">Plastique collecté</span>
             </div>
             <div className="hero__stat-divider" />
             <div className="hero__stat">
-              <span className="hero__stat-value">5000+</span>
+              <span className="hero__stat-value">1000+</span>
               <span className="hero__stat-label">Produits créés</span>
             </div>
             <div className="hero__stat-divider" />
             <div className="hero__stat">
-              <span className="hero__stat-value">47</span>
-              <span className="hero__stat-label">Plages nettoyées</span>
+              <span className="hero__stat-value">100 kg CO2</span>
+              <span className="hero__stat-label">Évités</span>
             </div>
           </div>
         </div>

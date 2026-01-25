@@ -21,6 +21,9 @@ import mailingTemplateRoutes from "./routes/maillingTemplateRoutes.js";
 import proRequestRoutes from "./routes/proRequestRoutes.js";
 import proOrderRoutes from "./routes/proOrderRoutes.js";
 import reapproRequestRoutes from "./routes/reapproRequestRoutes.js";
+// NOUVEAU: Import des routes Veille
+import veilleRoutes from "./routes/veilleRoutes.js";
+import veilleCategoryRoutes from "./routes/veilleCategoryRoutes.js";
 
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
@@ -97,6 +100,15 @@ app.use("/api/pro-orders", proOrderRoutes);
 
 // Demandes de réapprovisionnement
 app.use("/api/reappro-requests", reapproRequestRoutes);
+
+// ==========================================
+// NOUVEAU: ROUTES VEILLE (Admin)
+// ==========================================
+// Veilles (liens, images, vidéos YouTube, documents)
+app.use("/api/veilles", veilleRoutes);
+
+// Catégories de veille (Tutos, Idées produits, etc.)
+app.use("/api/veille-categories", veilleCategoryRoutes);
 
 // ==========================================
 // ERROR MIDDLEWARES

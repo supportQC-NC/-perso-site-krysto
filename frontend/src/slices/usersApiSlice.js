@@ -30,6 +30,28 @@ export const userApiSlice = apiSlice.injectEndpoints({
     }),
 
     // ==========================================
+    // PASSWORD RESET ENDPOINTS (NOUVEAU)
+    // ==========================================
+
+    // Demander un email de réinitialisation
+    forgotPassword: builder.mutation({
+      query: (data) => ({
+        url: "/api/users/forgot-password",
+        method: "POST",
+        body: data,
+      }),
+    }),
+
+    // Réinitialiser le mot de passe avec le token
+    resetPassword: builder.mutation({
+      query: ({ token, password }) => ({
+        url: `/api/users/reset-password/${token}`,
+        method: "PUT",
+        body: { password },
+      }),
+    }),
+
+    // ==========================================
     // USER PROFILE ENDPOINTS
     // ==========================================
 
@@ -69,7 +91,7 @@ export const userApiSlice = apiSlice.injectEndpoints({
       providesTags: (result, error, id) => [{ type: "User", id }],
     }),
 
-    // NOUVEAU - Stats générales
+    // Stats générales
     getUserStats: builder.query({
       query: () => ({
         url: "/api/users/stats",
@@ -170,13 +192,16 @@ export const {
   useLoginMutation,
   useRegisterMutation,
   useLogoutMutation,
+  // Password Reset (NOUVEAU)
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
   // Profile
   useGetProfileQuery,
   useUpdateProfileMutation,
   // Admin - Basic
   useGetUsersQuery,
   useGetUserByIdQuery,
-  useGetUserStatsQuery, // NOUVEAU
+  useGetUserStatsQuery,
   useUpdateUserMutation,
   useDeleteUserMutation,
   // Admin - Pro Management

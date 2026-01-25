@@ -8,6 +8,24 @@ import {
   templateLabels,
   recipientLabels,
 } from "../utils/mailingTemplates.js";
+// NOUVEAU: Import du renderer de blocs
+import { renderEmailFromBlocks } from "../utils/blockMailRenderer.js";
+
+// ==========================================
+// HELPER: Générer le HTML de l'email
+// Supporte les deux systèmes (blocs et templates)
+// ==========================================
+const generateEmailHtml = (campaign, recipientEmail) => {
+  // Si la campagne utilise le système de blocs
+  if (campaign.blocks && campaign.blocks.length > 0) {
+    console.log(`📧 Génération email avec BLOCS pour ${recipientEmail}`);
+    return renderEmailFromBlocks(campaign.blocks, campaign.settings || {}, recipientEmail);
+  }
+  
+  // Sinon, utiliser l'ancien système de templates
+  console.log(`📧 Génération email avec TEMPLATE "${campaign.template}" pour ${recipientEmail}`);
+  return generateMailingTemplate(campaign, recipientEmail);
+};
 
 // ==========================================
 // CRUD CAMPAGNES
@@ -22,16 +40,26 @@ const createCampaign = asyncHandler(async (req, res) => {
     subject,
     template,
     content,
+    blocks,      // NOUVEAU: Support des blocs
+    settings,    // NOUVEAU: Settings pour l'éditeur de blocs
     recipients,
     filters,
     scheduledAt,
   } = req.body;
 
+  // Déterminer le type de template
+  let templateType = template || "newsletter";
+  if (blocks && blocks.length > 0) {
+    templateType = "blocks";
+  }
+
   const campaign = await MailingCampaign.create({
     name,
     subject,
-    template: template || "newsletter",
-    content,
+    template: templateType,
+    content: content || {},
+    blocks: blocks || [],
+    settings: settings || {},
     recipients: recipients || "all",
     filters: filters || {},
     scheduledAt: scheduledAt || null,
@@ -118,6 +146,8 @@ const updateCampaign = asyncHandler(async (req, res) => {
     subject,
     template,
     content,
+    blocks,
+    settings,
     recipients,
     filters,
     scheduledAt,
@@ -128,6 +158,14 @@ const updateCampaign = asyncHandler(async (req, res) => {
   if (subject) campaign.subject = subject;
   if (template) campaign.template = template;
   if (content) campaign.content = { ...campaign.content, ...content };
+  if (blocks !== undefined) {
+    campaign.blocks = blocks;
+    // Si on ajoute des blocs, changer le template en "blocks"
+    if (blocks.length > 0) {
+      campaign.template = "blocks";
+    }
+  }
+  if (settings !== undefined) campaign.settings = { ...campaign.settings, ...settings };
   if (recipients) campaign.recipients = recipients;
   if (filters) campaign.filters = { ...campaign.filters, ...filters };
   if (scheduledAt !== undefined) campaign.scheduledAt = scheduledAt;
@@ -149,7 +187,6 @@ const deleteCampaign = asyncHandler(async (req, res) => {
     throw new Error("Campagne non trouvée");
   }
 
-  // Empêcher la suppression d'une campagne en cours d'envoi
   if (campaign.status === "sending") {
     res.status(400);
     throw new Error("Impossible de supprimer une campagne en cours d'envoi");
@@ -176,6 +213,8 @@ const duplicateCampaign = asyncHandler(async (req, res) => {
     subject: campaign.subject,
     template: campaign.template,
     content: campaign.content,
+    blocks: campaign.blocks || [],
+    settings: campaign.settings || {},
     recipients: campaign.recipients,
     filters: campaign.filters,
     status: "draft",
@@ -193,7 +232,6 @@ const getRecipientEmails = async (recipients, filters) => {
   let emails = [];
   const emailSet = new Set();
 
-  // Récupérer les prospects selon les filtres
   const getProspectEmails = async () => {
     const prospectFilter = { status: "active" };
 
@@ -211,7 +249,6 @@ const getRecipientEmails = async (recipients, filters) => {
     return prospects.map((p) => p.email);
   };
 
-  // Récupérer les utilisateurs selon les filtres
   const getUserEmails = async (onlyNewsletterSubscribers = false) => {
     const userFilter = {};
 
@@ -236,7 +273,6 @@ const getRecipientEmails = async (recipients, filters) => {
       break;
 
     case "newsletter_subscribers":
-      // Utilisateurs inscrits à la newsletter + prospects actifs
       const [newsletterUsers, activeProspects] = await Promise.all([
         getUserEmails(true),
         getProspectEmails(),
@@ -247,14 +283,13 @@ const getRecipientEmails = async (recipients, filters) => {
     case "all":
     default:
       const [allUsers, allProspects] = await Promise.all([
-        getUserEmails(true), // Seulement les users inscrits newsletter
+        getUserEmails(true),
         getProspectEmails(),
       ]);
       emails = [...allUsers, ...allProspects];
       break;
   }
 
-  // Dédoublonner les emails
   emails.forEach((email) => emailSet.add(email.toLowerCase()));
 
   return Array.from(emailSet);
@@ -285,6 +320,15 @@ const sendCampaign = asyncHandler(async (req, res) => {
     throw new Error("Cette campagne est déjà en cours d'envoi");
   }
 
+  // Vérifier que la campagne a du contenu
+  const hasBlocks = campaign.blocks && campaign.blocks.length > 0;
+  const hasContent = campaign.content && campaign.content.body;
+  
+  if (!hasBlocks && !hasContent) {
+    res.status(400);
+    throw new Error("La campagne n'a pas de contenu. Ajoutez des blocs ou du contenu avant d'envoyer.");
+  }
+
   // Récupérer les destinataires
   const emails = await getRecipientEmails(campaign.recipients, campaign.filters);
 
@@ -303,16 +347,23 @@ const sendCampaign = asyncHandler(async (req, res) => {
   let failed = 0;
   const errors = [];
 
-  // Envoyer par lots pour éviter de surcharger le serveur SMTP
+  // Configuration des lots
   const BATCH_SIZE = 10;
-  const DELAY_BETWEEN_BATCHES = 1000; // 1 seconde
+  const DELAY_BETWEEN_BATCHES = 1000;
+
+  console.log(`\n📧 ========================================`);
+  console.log(`📧 ENVOI CAMPAGNE: "${campaign.name}"`);
+  console.log(`📧 Type: ${hasBlocks ? 'BLOCS' : 'TEMPLATE (' + campaign.template + ')'}`);
+  console.log(`📧 Destinataires: ${emails.length}`);
+  console.log(`📧 ========================================\n`);
 
   for (let i = 0; i < emails.length; i += BATCH_SIZE) {
     const batch = emails.slice(i, i + BATCH_SIZE);
 
     const results = await Promise.allSettled(
       batch.map(async (email) => {
-        const html = generateMailingTemplate(campaign, email);
+        // MODIFIÉ: Utilise la nouvelle fonction qui supporte les 2 systèmes
+        const html = generateEmailHtml(campaign, email);
         await sendEmail({
           email,
           subject: campaign.subject,
@@ -322,10 +373,10 @@ const sendCampaign = asyncHandler(async (req, res) => {
       })
     );
 
-    // Traiter les résultats
     results.forEach((result, index) => {
       if (result.status === "fulfilled") {
         sent++;
+        console.log(`✅ [${sent}/${emails.length}] Email envoyé à ${batch[index]}`);
       } else {
         failed++;
         errors.push({
@@ -333,10 +384,7 @@ const sendCampaign = asyncHandler(async (req, res) => {
           error: result.reason?.message || "Erreur inconnue",
           timestamp: new Date(),
         });
-        console.error(
-          `Erreur envoi email à ${batch[index]}:`,
-          result.reason?.message
-        );
+        console.error(`❌ Erreur envoi à ${batch[index]}:`, result.reason?.message);
       }
     });
 
@@ -351,8 +399,13 @@ const sendCampaign = asyncHandler(async (req, res) => {
   campaign.sentAt = new Date();
   campaign.stats.sent = sent;
   campaign.stats.failed = failed;
-  campaign.errors = errors.slice(0, 100); // Garder max 100 erreurs
+  campaign.errors = errors.slice(0, 100);
   await campaign.save();
+
+  console.log(`\n📧 ========================================`);
+  console.log(`📧 CAMPAGNE TERMINÉE: "${campaign.name}"`);
+  console.log(`📧 Envoyés: ${sent} | Échoués: ${failed}`);
+  console.log(`📧 ========================================\n`);
 
   res.status(200).json({
     message: `Campagne envoyée`,
@@ -382,8 +435,18 @@ const sendTestEmail = asyncHandler(async (req, res) => {
     throw new Error("Campagne non trouvée");
   }
 
+  // Vérifier que la campagne a du contenu
+  const hasBlocks = campaign.blocks && campaign.blocks.length > 0;
+  const hasContent = campaign.content && campaign.content.body;
+  
+  if (!hasBlocks && !hasContent) {
+    res.status(400);
+    throw new Error("La campagne n'a pas de contenu. Ajoutez des blocs ou du contenu avant d'envoyer un test.");
+  }
+
   try {
-    const html = generateMailingTemplate(campaign, email);
+    // MODIFIÉ: Utilise la nouvelle fonction
+    const html = generateEmailHtml(campaign, email);
 
     await sendEmail({
       email,
@@ -391,10 +454,13 @@ const sendTestEmail = asyncHandler(async (req, res) => {
       html,
     });
 
+    console.log(`✅ Email de test envoyé à ${email} pour la campagne "${campaign.name}"`);
+
     res.status(200).json({
       message: `Email de test envoyé à ${email}`,
     });
   } catch (error) {
+    console.error(`❌ Erreur envoi test à ${email}:`, error.message);
     res.status(500);
     throw new Error(`Erreur lors de l'envoi: ${error.message}`);
   }
@@ -411,7 +477,8 @@ const previewCampaign = asyncHandler(async (req, res) => {
     throw new Error("Campagne non trouvée");
   }
 
-  const html = generateMailingTemplate(campaign, "preview@example.com");
+  // MODIFIÉ: Utilise la nouvelle fonction
+  const html = generateEmailHtml(campaign, "preview@example.com");
 
   res.status(200).json({
     html,
@@ -429,7 +496,6 @@ const previewCampaign = asyncHandler(async (req, res) => {
 const getMailingStats = asyncHandler(async (req, res) => {
   const stats = await MailingCampaign.getGlobalStats();
 
-  // Compter les destinataires potentiels
   const activeProspects = await Prospect.countDocuments({ status: "active" });
   const newsletterUsers = await User.countDocuments({ newsletterSubscribed: true });
   const totalUsers = await User.countDocuments({});
@@ -449,7 +515,10 @@ const getMailingStats = asyncHandler(async (req, res) => {
 // @route   GET /api/mailing/templates
 // @access  Private/Admin
 const getTemplateTypes = asyncHandler(async (req, res) => {
-  res.status(200).json(templateLabels);
+  res.status(200).json({
+    ...templateLabels,
+    blocks: { label: "Éditeur de blocs", icon: "🧱", color: "#6366f1" },
+  });
 });
 
 // @desc    Obtenir les types de destinataires disponibles

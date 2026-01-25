@@ -10,6 +10,7 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
         method: "POST",
         body: order,
       }),
+      invalidatesTags: ["Order"],
     }),
 
     // Obtenir les détails d'une commande
@@ -17,6 +18,7 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
       query: (id) => ({
         url: `${ORDERS_URL}/${id}`,
       }),
+      providesTags: (result, error, id) => [{ type: "Order", id }],
       keepUnusedDataFor: 5,
     }),
 
@@ -27,6 +29,10 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
         method: "PUT",
         body: details,
       }),
+      invalidatesTags: (result, error, { orderId }) => [
+        { type: "Order", id: orderId },
+        "Order",
+      ],
     }),
 
     // Obtenir mes commandes
@@ -34,6 +40,7 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
       query: () => ({
         url: `${ORDERS_URL}/myorders`,
       }),
+      providesTags: ["Order"],
       keepUnusedDataFor: 5,
     }),
 
@@ -61,6 +68,7 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
       query: () => ({
         url: `${ORDERS_URL}/stats`,
       }),
+      providesTags: ["Order"],
       keepUnusedDataFor: 5,
     }),
 
@@ -70,17 +78,24 @@ export const ordersApiSlice = apiSlice.injectEndpoints({
         url: `${ORDERS_URL}/${orderId}/deliver`,
         method: "PUT",
       }),
-      invalidatesTags: ["Order"],
+      invalidatesTags: (result, error, orderId) => [
+        { type: "Order", id: orderId },
+        "Order",
+      ],
     }),
 
     // Mettre à jour le statut d'une commande (Admin)
+    // MODIFIÉ: Accepte maintenant trackingNumber et reason pour les emails
     updateOrderStatus: builder.mutation({
-      query: ({ orderId, status }) => ({
+      query: ({ orderId, status, trackingNumber, reason }) => ({
         url: `${ORDERS_URL}/${orderId}/status`,
         method: "PUT",
-        body: { status },
+        body: { status, trackingNumber, reason },
       }),
-      invalidatesTags: ["Order"],
+      invalidatesTags: (result, error, { orderId }) => [
+        { type: "Order", id: orderId },
+        "Order",
+      ],
     }),
 
     // Supprimer une commande (Admin)

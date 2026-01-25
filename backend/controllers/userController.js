@@ -2,8 +2,12 @@ import asyncHandler from "../middleware/asyncHandler.js";
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import sendEmail from "../utils/sendEmail.js";
-import { welcomeEmailTemplate } from "../utils/emailTemplates.js";
+import { 
+  welcomeEmailTemplate,
+  resetPasswordTemplate 
+} from "../utils/emailTemplates.js";
 import generateToken from "../utils/generateToken.js";
 
 // Helper: Get user from JWT cookie
@@ -78,15 +82,18 @@ const registerUser = asyncHandler(async (req, res) => {
   if (user) {
     generateToken(res, user._id);
 
-    // Envoyer l'email de bienvenue
+    // ========================================
+    // ENVOI EMAIL DE BIENVENUE
+    // ========================================
     try {
       await sendEmail({
         email: user.email,
-        subject: "Bienvenue sur Krysto ! 🌿",
+        subject: "🌿 Bienvenue sur Krysto !",
         html: welcomeEmailTemplate(user.name),
       });
+      console.log(`✅ Email de bienvenue envoyé à ${user.email}`);
     } catch (error) {
-      console.log("Erreur envoi email de bienvenue:", error);
+      console.error("❌ Erreur envoi email de bienvenue:", error.message);
     }
 
     res.status(201).json({
@@ -116,6 +123,88 @@ const logoutUser = asyncHandler(async (req, res) => {
   });
 
   res.status(200).json({ message: "Déconnexion réussie" });
+});
+
+// @desc    Forgot password - send reset email
+// @route   POST /api/users/forgot-password
+// @access  Public
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    res.status(404);
+    throw new Error("Aucun compte associé à cet email");
+  }
+
+  // Générer un token de réinitialisation
+  const resetToken = crypto.randomBytes(32).toString("hex");
+  const resetTokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
+
+  // Sauvegarder le token hashé dans la base de données
+  user.resetPasswordToken = resetTokenHash;
+  user.resetPasswordExpire = Date.now() + 3600000; // 1 heure
+  await user.save();
+
+  // URL de réinitialisation
+  const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password/${resetToken}`;
+
+  // ========================================
+  // ENVOI EMAIL MOT DE PASSE OUBLIÉ
+  // ========================================
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: "🔐 Réinitialisation de votre mot de passe Krysto",
+      html: resetPasswordTemplate(user.name, resetUrl),
+    });
+    console.log(`✅ Email de réinitialisation envoyé à ${user.email}`);
+    
+    res.status(200).json({
+      message: "Un email de réinitialisation a été envoyé à votre adresse email",
+    });
+  } catch (error) {
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    console.error("❌ Erreur envoi email réinitialisation:", error.message);
+    res.status(500);
+    throw new Error("Impossible d'envoyer l'email. Veuillez réessayer plus tard.");
+  }
+});
+
+// @desc    Reset password with token
+// @route   PUT /api/users/reset-password/:token
+// @access  Public
+const resetPassword = asyncHandler(async (req, res) => {
+  const { password } = req.body;
+  const { token } = req.params;
+
+  // Hasher le token reçu pour le comparer
+  const resetTokenHash = crypto.createHash("sha256").update(token).digest("hex");
+
+  const user = await User.findOne({
+    resetPasswordToken: resetTokenHash,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    res.status(400);
+    throw new Error("Token invalide ou expiré");
+  }
+
+  // Mettre à jour le mot de passe
+  const salt = await bcrypt.genSalt(10);
+  user.password = await bcrypt.hash(password, salt);
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+  await user.save();
+
+  res.status(200).json({
+    message: "Mot de passe réinitialisé avec succès",
+  });
 });
 
 // ==========================================
@@ -565,26 +654,6 @@ const getProUsers = asyncHandler(async (req, res) => {
   });
 });
 
-// export {
-//   authUser,
-//   registerUser,
-//   logoutUser,
-//   getUserProfile,
-//   updateUserProfile,
-//   getUsers,
-//   getUserById,
-//   deleteUser,
-//   updateUser,
-//   // Pro management
-//   setUserAsPro,
-//   updateUserProInfo,
-//   removeUserPro,
-//   suspendUserPro,
-//   reactivateUserPro,
-//   getUserProStats,
-//   getProUsers,
-// };
-
 // @desc    Obtenir les statistiques générales des utilisateurs
 // @route   GET /api/users/stats
 // @access  Private/Admin
@@ -638,6 +707,8 @@ export {
   authUser,
   registerUser,
   logoutUser,
+  forgotPassword,
+  resetPassword,
   getUserProfile,
   updateUserProfile,
   getUsers,
@@ -652,5 +723,5 @@ export {
   reactivateUserPro,
   getUserProStats,
   getProUsers,
-  getUserStats, // NOUVEAU
+  getUserStats,
 };

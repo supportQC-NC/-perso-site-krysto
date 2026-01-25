@@ -3,13 +3,14 @@ import {
   authUser,
   registerUser,
   logoutUser,
+  forgotPassword,
+  resetPassword,
   getUserProfile,
   updateUserProfile,
   getUsers,
   getUserById,
   deleteUser,
   updateUser,
-  // Pro management
   setUserAsPro,
   updateUserProInfo,
   removeUserPro,
@@ -17,7 +18,7 @@ import {
   reactivateUserPro,
   getUserProStats,
   getProUsers,
-  getUserStats, // NOUVEAU
+  getUserStats,
 } from "../controllers/userController.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
 
@@ -26,38 +27,33 @@ const router = express.Router();
 // ==========================================
 // PUBLIC ROUTES
 // ==========================================
-router.post("/", registerUser);
 router.post("/login", authUser);
+router.post("/", registerUser);
+router.post("/forgot-password", forgotPassword);
+router.put("/reset-password/:token", resetPassword);
 
 // ==========================================
-// USER ROUTES (authentifié)
+// PROTECTED ROUTES (User)
 // ==========================================
 router.post("/logout", protect, logoutUser);
-router.get("/profile", protect, getUserProfile);
-router.put("/profile", protect, updateUserProfile);
+router.route("/profile")
+  .get(protect, getUserProfile)
+  .put(protect, updateUserProfile);
 
 // ==========================================
 // ADMIN ROUTES
 // ==========================================
-
-// Stats (doivent être avant /:id)
-router.get("/stats", protect, admin, getUserStats); // NOUVEAU
+router.get("/", protect, admin, getUsers);
+router.get("/stats", protect, admin, getUserStats);
 router.get("/pro-stats", protect, admin, getUserProStats);
-
-// Liste des utilisateurs Pro
 router.get("/pro", protect, admin, getProUsers);
 
-// Liste de tous les utilisateurs
-router.get("/", protect, admin, getUsers);
-
-// Routes avec ID
-router
-  .route("/:id")
+router.route("/:id")
   .get(protect, admin, getUserById)
   .put(protect, admin, updateUser)
   .delete(protect, admin, deleteUser);
 
-// Gestion Pro
+// Pro management routes
 router.put("/:id/set-pro", protect, admin, setUserAsPro);
 router.put("/:id/pro-info", protect, admin, updateUserProInfo);
 router.put("/:id/remove-pro", protect, admin, removeUserPro);

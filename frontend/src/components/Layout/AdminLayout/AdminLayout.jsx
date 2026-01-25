@@ -20,6 +20,7 @@ import {
   FiChevronDown,
 } from "react-icons/fi";
 import "./AdminLayout.css";
+import { FaHighlighter } from "react-icons/fa";
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -184,6 +185,13 @@ const AdminLayout = () => {
             onClick={closeSidebar}
           >
             <FiTruck /> Mailing
+          </NavLink>
+          <NavLink
+            to="/admin/veilles"
+            className="admin-sidebar__link"
+            onClick={closeSidebar}
+          >
+            <FaHighlighter /> Veilles
           </NavLink>
         </nav>
 

@@ -16,7 +16,6 @@ const mailingCampaignSchema = new mongoose.Schema(
     },
     template: {
       type: String,
-      required: [true, "Le type de template est obligatoire"],
       enum: {
         values: [
           "promo",
@@ -25,19 +24,24 @@ const mailingCampaignSchema = new mongoose.Schema(
           "evenement",
           "newsletter",
           "custom",
+          "blocks", // NOUVEAU: pour les campagnes créées avec l'éditeur de blocs
         ],
         message: "{VALUE} n'est pas un type de template valide",
       },
+      default: "newsletter",
     },
+    
+    // ==========================================
+    // ANCIEN SYSTÈME: Contenu simple
+    // ==========================================
     content: {
-      // Contenu principal de l'email
       headline: {
         type: String,
         default: "",
       },
       body: {
         type: String,
-        required: [true, "Le contenu de l'email est obligatoire"],
+        default: "", // Plus required car on peut utiliser les blocs
       },
       ctaText: {
         type: String,
@@ -47,7 +51,6 @@ const mailingCampaignSchema = new mongoose.Schema(
         type: String,
         default: "",
       },
-      // Spécifique aux promos
       promoCode: {
         type: String,
         default: "",
@@ -60,12 +63,38 @@ const mailingCampaignSchema = new mongoose.Schema(
         type: Date,
         default: null,
       },
-      // Image optionnelle
       imageUrl: {
         type: String,
         default: "",
       },
     },
+
+    // ==========================================
+    // NOUVEAU SYSTÈME: Éditeur de blocs
+    // ==========================================
+    blocks: {
+      type: Array,
+      default: [],
+    },
+    settings: {
+      type: Object,
+      default: {
+        maxWidth: 600,
+        backgroundColor: "#f4f4f4",
+        contentBackgroundColor: "#ffffff",
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+        baseFontSize: 16,
+        baseTextColor: "#333333",
+        borderRadius: 16,
+        contentPadding: 0,
+        preheaderText: "",
+        mobileOptimized: true,
+      },
+    },
+
+    // ==========================================
+    // DESTINATAIRES
+    // ==========================================
     recipients: {
       type: String,
       required: true,
@@ -75,9 +104,7 @@ const mailingCampaignSchema = new mongoose.Schema(
       },
       default: "all",
     },
-    // Filtres optionnels pour cibler
     filters: {
-      // Pour les users
       isAdmin: {
         type: Boolean,
         default: null,
@@ -86,7 +113,6 @@ const mailingCampaignSchema = new mongoose.Schema(
         type: Boolean,
         default: null,
       },
-      // Pour les prospects
       prospectStatus: {
         type: String,
         enum: ["active", "unsubscribed", "bounced", "converted", null],
@@ -101,6 +127,10 @@ const mailingCampaignSchema = new mongoose.Schema(
         default: [],
       },
     },
+
+    // ==========================================
+    // STATUT ET PLANIFICATION
+    // ==========================================
     status: {
       type: String,
       enum: ["draft", "scheduled", "sending", "sent", "failed", "cancelled"],
@@ -114,6 +144,10 @@ const mailingCampaignSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    // ==========================================
+    // STATISTIQUES
+    // ==========================================
     stats: {
       totalRecipients: {
         type: Number,
@@ -136,7 +170,6 @@ const mailingCampaignSchema = new mongoose.Schema(
         default: 0,
       },
     },
-    // Historique des erreurs
     errors: [
       {
         email: String,
@@ -160,24 +193,36 @@ const mailingCampaignSchema = new mongoose.Schema(
   }
 );
 
-// Index pour améliorer les performances
+// Index
 mailingCampaignSchema.index({ status: 1, createdAt: -1 });
 mailingCampaignSchema.index({ template: 1 });
 mailingCampaignSchema.index({ scheduledAt: 1 });
 
-// Virtual pour le taux d'ouverture
+// Virtual: Taux d'ouverture
 mailingCampaignSchema.virtual("openRate").get(function () {
   if (this.stats.sent === 0) return 0;
   return ((this.stats.opened / this.stats.sent) * 100).toFixed(1);
 });
 
-// Virtual pour le taux de clic
+// Virtual: Taux de clic
 mailingCampaignSchema.virtual("clickRate").get(function () {
   if (this.stats.sent === 0) return 0;
   return ((this.stats.clicked / this.stats.sent) * 100).toFixed(1);
 });
 
-// Méthode statique pour obtenir les statistiques globales
+// Virtual: Vérifie si la campagne utilise les blocs
+mailingCampaignSchema.virtual("usesBlocks").get(function () {
+  return this.blocks && this.blocks.length > 0;
+});
+
+// Virtual: Vérifie si la campagne a du contenu
+mailingCampaignSchema.virtual("hasContent").get(function () {
+  const hasBlocks = this.blocks && this.blocks.length > 0;
+  const hasBody = this.content && this.content.body;
+  return hasBlocks || hasBody;
+});
+
+// Méthode statique: Statistiques globales
 mailingCampaignSchema.statics.getGlobalStats = async function () {
   const totalCampaigns = await this.countDocuments();
   const sentCampaigns = await this.countDocuments({ status: "sent" });

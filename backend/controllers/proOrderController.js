@@ -3,6 +3,11 @@ import ProOrder from "../models/proOrderModel.js";
 import Product from "../models/productModel.js";
 import User from "../models/userModel.js";
 import sendEmail from "../utils/sendEmail.js";
+import {
+  proOrderConfirmationTemplate,
+  proOrderStatusUpdateTemplate,
+  proPaymentReminderTemplate,
+} from "../utils/emailTemplates.js";
 
 // ==========================================
 // ROUTES PRO (Utilisateur Pro connecté)
@@ -121,6 +126,62 @@ const createProOrder = asyncHandler(async (req, res) => {
   await proOrder.populate("user", "name email proInfo");
   await proOrder.populate("items.product", "name image");
 
+  // ========================================
+  // ENVOI EMAIL CONFIRMATION COMMANDE PRO
+  // ========================================
+  try {
+    await sendEmail({
+      email: user.proInfo.contactEmail || user.email,
+      subject: `🏢 Commande Pro #${proOrder._id.toString().slice(-8).toUpperCase()} confirmée !`,
+      html: proOrderConfirmationTemplate(proOrder, user),
+    });
+    console.log(`✅ Email de confirmation commande Pro envoyé à ${user.proInfo.contactEmail || user.email}`);
+  } catch (error) {
+    console.error("❌ Erreur envoi email confirmation commande Pro:", error.message);
+  }
+
+  // ========================================
+  // NOTIFICATION AUX ADMINS
+  // ========================================
+  try {
+    const admins = await User.find({ isAdmin: true }).select("email");
+    const adminEmails = admins.map((admin) => admin.email);
+
+    if (adminEmails.length > 0) {
+      await sendEmail({
+        email: adminEmails.join(","),
+        subject: `🏢 Nouvelle commande Pro - ${user.proInfo.companyName} - ${totalAmount.toLocaleString()} XPF`,
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head><meta charset="utf-8"></head>
+          <body style="font-family: Arial, sans-serif; padding: 20px;">
+            <div style="max-width: 600px; margin: 0 auto; background: #e3f2fd; padding: 30px; border-radius: 12px;">
+              <h2 style="color: #1976d2;">🏢 Nouvelle commande Pro</h2>
+              <div style="background: white; padding: 20px; border-radius: 8px;">
+                <p><strong>Client :</strong> ${user.proInfo.companyName}</p>
+                <p><strong>Type :</strong> ${user.proInfo.partnershipType === 'revendeur' ? 'Revendeur' : 'Dépôt-vente'}</p>
+                <p><strong>Montant :</strong> ${totalAmount.toLocaleString()} XPF</p>
+                <p><strong>Articles :</strong> ${orderItems.length}</p>
+                <p><strong>Remise appliquée :</strong> ${discountRate}%</p>
+              </div>
+              <div style="text-align: center; margin-top: 20px;">
+                <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin/pro-orders/${proOrder._id}" 
+                   style="background: #1976d2; color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px;">
+                  Voir la commande →
+                </a>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+      });
+      console.log("✅ Notification admin envoyée pour nouvelle commande Pro");
+    }
+  } catch (error) {
+    console.error("❌ Erreur notification admin commande Pro:", error.message);
+  }
+
   res.status(201).json(proOrder);
 });
 
@@ -195,7 +256,7 @@ const getProOrderById = asyncHandler(async (req, res) => {
 const cancelMyProOrder = asyncHandler(async (req, res) => {
   const { reason } = req.body;
 
-  const order = await ProOrder.findById(req.params.id);
+  const order = await ProOrder.findById(req.params.id).populate("user", "name email proInfo");
 
   if (!order) {
     res.status(404);
@@ -203,7 +264,7 @@ const cancelMyProOrder = asyncHandler(async (req, res) => {
   }
 
   // Vérifier que c'est bien la commande de l'utilisateur
-  if (order.user.toString() !== req.user._id.toString()) {
+  if (order.user._id.toString() !== req.user._id.toString()) {
     res.status(403);
     throw new Error("Accès non autorisé");
   }
@@ -224,6 +285,20 @@ const cancelMyProOrder = asyncHandler(async (req, res) => {
   });
 
   await order.save();
+
+  // ========================================
+  // ENVOI EMAIL ANNULATION
+  // ========================================
+  try {
+    await sendEmail({
+      email: order.user.proInfo?.contactEmail || order.user.email,
+      subject: `❌ Commande Pro #${order._id.toString().slice(-8).toUpperCase()} annulée`,
+      html: proOrderStatusUpdateTemplate(order, order.user, "cancelled", reason),
+    });
+    console.log(`✅ Email d'annulation commande Pro envoyé`);
+  } catch (error) {
+    console.error("❌ Erreur envoi email annulation:", error.message);
+  }
 
   res.json({ message: "Commande annulée", order });
 });
@@ -291,7 +366,7 @@ const getAllProOrders = asyncHandler(async (req, res) => {
 const updateProOrderStatus = asyncHandler(async (req, res) => {
   const { status, note } = req.body;
 
-  const order = await ProOrder.findById(req.params.id);
+  const order = await ProOrder.findById(req.params.id).populate("user", "name email proInfo");
 
   if (!order) {
     res.status(404);
@@ -317,6 +392,30 @@ const updateProOrderStatus = asyncHandler(async (req, res) => {
 
   await order.populate("user", "name email proInfo");
 
+  // ========================================
+  // ENVOI EMAIL MISE À JOUR STATUT
+  // ========================================
+  try {
+    const statusLabels = {
+      confirmed: "Confirmée",
+      processing: "En préparation",
+      ready: "Prête",
+      shipped: "Expédiée",
+      delivered: "Livrée",
+      completed: "Terminée",
+      cancelled: "Annulée",
+    };
+
+    await sendEmail({
+      email: order.user.proInfo?.contactEmail || order.user.email,
+      subject: `🏢 Commande Pro #${order._id.toString().slice(-8).toUpperCase()} - ${statusLabels[status] || status}`,
+      html: proOrderStatusUpdateTemplate(order, order.user, status, note),
+    });
+    console.log(`✅ Email de mise à jour statut Pro envoyé (${status})`);
+  } catch (error) {
+    console.error("❌ Erreur envoi email statut Pro:", error.message);
+  }
+
   res.json({ message: `Statut mis à jour: ${status}`, order });
 });
 
@@ -326,7 +425,7 @@ const updateProOrderStatus = asyncHandler(async (req, res) => {
 const recordProOrderPayment = asyncHandler(async (req, res) => {
   const { amount, note } = req.body;
 
-  const order = await ProOrder.findById(req.params.id);
+  const order = await ProOrder.findById(req.params.id).populate("user", "name email proInfo");
 
   if (!order) {
     res.status(404);
@@ -344,6 +443,54 @@ const recordProOrderPayment = asyncHandler(async (req, res) => {
   }
 
   await order.recordPayment(amount, req.user._id, note);
+
+  // ========================================
+  // ENVOI EMAIL CONFIRMATION PAIEMENT
+  // ========================================
+  try {
+    await sendEmail({
+      email: order.user.proInfo?.contactEmail || order.user.email,
+      subject: `💳 Paiement reçu - Commande Pro #${order._id.toString().slice(-8).toUpperCase()}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head><meta charset="utf-8"></head>
+        <body style="font-family: Arial, sans-serif; padding: 20px;">
+          <div style="max-width: 600px; margin: 0 auto; background: #e8f5e9; padding: 30px; border-radius: 12px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+              <span style="font-size: 48px;">💳</span>
+              <h2 style="color: #4caf50; margin: 10px 0;">Paiement reçu</h2>
+            </div>
+            <div style="background: white; padding: 20px; border-radius: 8px; text-align: center;">
+              <p style="font-size: 14px; color: #666;">Montant reçu</p>
+              <p style="font-size: 32px; font-weight: bold; color: #4caf50; margin: 10px 0;">
+                ${amount.toLocaleString()} XPF
+              </p>
+              <p style="font-size: 14px; color: #666;">
+                Commande #${order._id.toString().slice(-8).toUpperCase()}
+              </p>
+              ${order.remainingAmount > 0 ? `
+              <p style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; font-size: 14px; color: #666;">
+                Solde restant : <strong>${order.remainingAmount.toLocaleString()} XPF</strong>
+              </p>
+              ` : `
+              <p style="margin-top: 15px; padding: 10px; background: #c8e6c9; border-radius: 8px; color: #2e7d32; font-weight: bold;">
+                ✓ Commande entièrement payée
+              </p>
+              `}
+            </div>
+            <p style="text-align: center; font-size: 14px; color: #666; margin-top: 20px;">
+              Merci pour votre confiance !<br>L'équipe Krysto Pro 🏢
+            </p>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+    console.log(`✅ Email confirmation paiement Pro envoyé`);
+  } catch (error) {
+    console.error("❌ Erreur envoi email paiement Pro:", error.message);
+  }
 
   res.json({
     message: `Paiement de ${amount.toLocaleString()} XPF enregistré`,
@@ -406,6 +553,59 @@ const generateInvoiceNumber = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Envoyer un rappel de paiement
+// @route   POST /api/pro-orders/:id/payment-reminder
+// @access  Private/Admin
+const sendPaymentReminder = asyncHandler(async (req, res) => {
+  const order = await ProOrder.findById(req.params.id).populate("user", "name email proInfo");
+
+  if (!order) {
+    res.status(404);
+    throw new Error("Commande non trouvée");
+  }
+
+  if (order.paymentStatus === "paid") {
+    res.status(400);
+    throw new Error("Cette commande est déjà payée");
+  }
+
+  // Calculer les jours de retard
+  const daysOverdue = order.paymentDueDate 
+    ? Math.max(0, Math.floor((new Date() - new Date(order.paymentDueDate)) / (1000 * 60 * 60 * 24)))
+    : 0;
+
+  // ========================================
+  // ENVOI EMAIL RAPPEL PAIEMENT
+  // ========================================
+  try {
+    await sendEmail({
+      email: order.user.proInfo?.contactEmail || order.user.email,
+      subject: `💳 Rappel de paiement - Commande Pro #${order._id.toString().slice(-8).toUpperCase()}`,
+      html: proPaymentReminderTemplate(order, order.user, daysOverdue),
+    });
+    console.log(`✅ Email de rappel paiement Pro envoyé`);
+    
+    // Enregistrer dans l'historique
+    order.history.push({
+      action: "Rappel de paiement envoyé",
+      status: order.status,
+      note: `Rappel envoyé par email (${daysOverdue > 0 ? `${daysOverdue} jours de retard` : 'à échéance'})`,
+      date: new Date(),
+      user: req.user._id,
+    });
+    await order.save();
+  } catch (error) {
+    console.error("❌ Erreur envoi rappel paiement:", error.message);
+    res.status(500);
+    throw new Error("Impossible d'envoyer le rappel de paiement");
+  }
+
+  res.json({
+    message: "Rappel de paiement envoyé",
+    order,
+  });
+});
+
 // @desc    Obtenir les statistiques globales des commandes Pro
 // @route   GET /api/pro-orders/stats
 // @access  Private/Admin
@@ -464,6 +664,7 @@ export {
   recordProOrderPayment,
   addProOrderNotes,
   generateInvoiceNumber,
+  sendPaymentReminder,
   getProOrderStats,
   deleteProOrder,
 };

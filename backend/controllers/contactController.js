@@ -1,5 +1,10 @@
 import asyncHandler from '../middleware/asyncHandler.js';
 import Contact from '../models/contactModel.js';
+import sendEmail from '../utils/sendEmail.js';
+import { 
+  contactConfirmationTemplate,
+  contactResponseTemplate 
+} from '../utils/emailTemplates.js';
 
 // @desc    Créer un nouveau message de contact
 // @route   POST /api/contacts
@@ -18,6 +23,70 @@ const createContact = asyncHandler(async (req, res) => {
     message,
     ipAddress,
   });
+
+  // ========================================
+  // ENVOI EMAIL DE CONFIRMATION AU CLIENT
+  // ========================================
+  try {
+    await sendEmail({
+      email: contact.email,
+      subject: '✉️ Message bien reçu - Krysto',
+      html: contactConfirmationTemplate(contact),
+    });
+    console.log(`✅ Email de confirmation contact envoyé à ${contact.email}`);
+  } catch (error) {
+    console.error('❌ Erreur envoi email confirmation contact:', error.message);
+  }
+
+  // ========================================
+  // NOTIFICATION AUX ADMINS (optionnel)
+  // ========================================
+  try {
+    const adminEmail = process.env.ADMIN_EMAIL || 'contact@krysto.nc';
+    await sendEmail({
+      email: adminEmail,
+      subject: `📩 Nouveau message de contact - ${subject}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+        </head>
+        <body style="font-family: Arial, sans-serif; padding: 20px;">
+          <div style="max-width: 600px; margin: 0 auto; background: #f8f9fa; padding: 30px; border-radius: 12px;">
+            <h2 style="color: #2d6a4f; margin-bottom: 20px;">📩 Nouveau message de contact</h2>
+            
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <p><strong>Nom :</strong> ${contact.name}</p>
+              <p><strong>Email :</strong> <a href="mailto:${contact.email}">${contact.email}</a></p>
+              ${contact.phone ? `<p><strong>Téléphone :</strong> ${contact.phone}</p>` : ''}
+              <p><strong>Sujet :</strong> ${contact.subject}</p>
+            </div>
+            
+            <div style="background: white; padding: 20px; border-radius: 8px;">
+              <p><strong>Message :</strong></p>
+              <p style="white-space: pre-wrap; color: #333; line-height: 1.6;">${contact.message}</p>
+            </div>
+            
+            <div style="margin-top: 20px; text-align: center;">
+              <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/admin/contacts/${contact._id}" 
+                 style="background: #2d6a4f; color: white; padding: 12px 30px; text-decoration: none; border-radius: 25px; display: inline-block;">
+                Voir dans l'admin →
+              </a>
+            </div>
+            
+            <p style="font-size: 12px; color: #999; margin-top: 20px; text-align: center;">
+              Reçu le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}
+            </p>
+          </div>
+        </body>
+        </html>
+      `,
+    });
+    console.log(`✅ Notification admin envoyée pour nouveau contact`);
+  } catch (error) {
+    console.error('❌ Erreur notification admin:', error.message);
+  }
 
   res.status(201).json(contact);
 });
@@ -127,7 +196,23 @@ const respondToContact = asyncHandler(async (req, res) => {
     throw new Error('Message non trouvé');
   }
 
+  // Sauvegarder la réponse
   await contact.addResponse(content, req.user._id);
+
+  // ========================================
+  // ENVOI EMAIL DE RÉPONSE AU CLIENT
+  // ========================================
+  try {
+    await sendEmail({
+      email: contact.email,
+      subject: `💬 Réponse à votre message - ${contact.subject}`,
+      html: contactResponseTemplate(contact, content),
+    });
+    console.log(`✅ Email de réponse envoyé à ${contact.email}`);
+  } catch (error) {
+    console.error('❌ Erreur envoi email réponse:', error.message);
+    // On ne bloque pas si l'email échoue
+  }
 
   res.status(200).json(contact);
 });

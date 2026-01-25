@@ -79,7 +79,10 @@ export const proOrderApiSlice = apiSlice.injectEndpoints({
         method: "PUT",
         body: { status, note },
       }),
-      invalidatesTags: ["ProOrder"],
+      invalidatesTags: (result, error, { id }) => [
+        { type: "ProOrder", id },
+        "ProOrder",
+      ],
     }),
 
     // Enregistrer un paiement
@@ -89,7 +92,10 @@ export const proOrderApiSlice = apiSlice.injectEndpoints({
         method: "PUT",
         body: { amount, note },
       }),
-      invalidatesTags: ["ProOrder"],
+      invalidatesTags: (result, error, { id }) => [
+        { type: "ProOrder", id },
+        "ProOrder",
+      ],
     }),
 
     // Ajouter des notes internes
@@ -107,6 +113,17 @@ export const proOrderApiSlice = apiSlice.injectEndpoints({
       query: (id) => ({
         url: `/api/pro-orders/${id}/invoice`,
         method: "PUT",
+      }),
+      invalidatesTags: (result, error, id) => [{ type: "ProOrder", id }],
+    }),
+
+    // ==========================================
+    // NOUVEAU: Envoyer un rappel de paiement
+    // ==========================================
+    sendPaymentReminder: builder.mutation({
+      query: (id) => ({
+        url: `/api/pro-orders/${id}/payment-reminder`,
+        method: "POST",
       }),
       invalidatesTags: (result, error, id) => [{ type: "ProOrder", id }],
     }),
@@ -136,5 +153,6 @@ export const {
   useRecordProOrderPaymentMutation,
   useAddProOrderNotesMutation,
   useGenerateProOrderInvoiceMutation,
+  useSendPaymentReminderMutation, // NOUVEAU
   useDeleteProOrderMutation,
 } = proOrderApiSlice;
