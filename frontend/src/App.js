@@ -1,4 +1,3 @@
-import React from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import ScrollToTop from "./components/utils/ScrollToTop";
 import Header from "./components/global/Header/Headear";
@@ -11,6 +10,9 @@ const App = () => {
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isProRoute = location.pathname.startsWith('/pro');
   const hideLayout = isAdminRoute || isProRoute;
+  
+  // Landing page = pleine largeur sans container
+  const isLandingPage = location.pathname === '/';
 
   return (
     <>
@@ -19,7 +21,7 @@ const App = () => {
       {!hideLayout && <Header />}
 
       <main className={hideLayout ? '' : 'main-content'}>
-        {hideLayout ? (
+        {hideLayout || isLandingPage ? (
           <Outlet />
         ) : (
           <div className="container">

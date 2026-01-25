@@ -1,0 +1,413 @@
+/* ==========================================
+   HERO - Full Screen + Animated Particles
+   ========================================== */
+
+.hero {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+/* ==================== BACKGROUND - FULL SCREEN ==================== */
+.hero__bg-image {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #0a3d5c;
+}
+
+/* Gradient Overlay */
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 61, 92, 0.5) 0%,
+    rgba(8, 47, 73, 0.4) 40%,
+    rgba(6, 78, 92, 0.45) 70%,
+    rgba(4, 55, 70, 0.6) 100%
+  );
+}
+
+/* ==================== PARTICLES - ANIMATED ==================== */
+.hero__particles {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hero__particle {
+  position: absolute;
+  width: var(--size);
+  height: var(--size);
+  left: var(--left);
+  top: var(--top);
+  opacity: var(--opacity);
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: particleFloat var(--duration) ease-in-out infinite;
+  animation-delay: var(--delay);
+}
+
+/* Formes variées */
+.hero__particle:nth-child(3n) {
+  border-radius: 40% 60% 55% 45%;
+}
+
+.hero__particle:nth-child(5n) {
+  border-radius: 50% 30% 50% 70%;
+}
+
+.hero__particle:nth-child(7n) {
+  border-radius: 30%;
+}
+
+@keyframes particleFloat {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(var(--moveX), calc(var(--moveY) * -1)) scale(1.1);
+  }
+  50% {
+    transform: translate(calc(var(--moveX) * -0.5), var(--moveY)) scale(0.95);
+  }
+  75% {
+    transform: translate(calc(var(--moveX) * 0.7), calc(var(--moveY) * -0.5))
+      scale(1.05);
+  }
+}
+
+/* ==================== CONTENT - CENTERED ==================== */
+.hero__content {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 1000px;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 800px;
+}
+
+/* Animation States */
+.hero__inner > * {
+  opacity: 0;
+  transform: translateY(25px);
+  transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero__inner--loaded > * {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hero__inner--loaded > *:nth-child(1) {
+  transition-delay: 0.1s;
+}
+.hero__inner--loaded > *:nth-child(2) {
+  transition-delay: 0.2s;
+}
+.hero__inner--loaded > *:nth-child(3) {
+  transition-delay: 0.35s;
+}
+.hero__inner--loaded > *:nth-child(4) {
+  transition-delay: 0.5s;
+}
+.hero__inner--loaded > *:nth-child(5) {
+  transition-delay: 0.65s;
+}
+
+/* ==================== BADGE ==================== */
+.hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 100px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin-bottom: 1.5rem;
+}
+
+.hero__badge-dot {
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.1);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+}
+
+/* ==================== TITLE ==================== */
+.hero__title {
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-size: clamp(2.25rem, 5vw, 4rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0 0 1.25rem;
+}
+
+.hero__title-line {
+  display: block;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.hero__title-highlight {
+  display: block;
+  background: linear-gradient(135deg, #f97316 0%, #fb923c 50%, #fbbf24 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ==================== SUBTITLE ==================== */
+.hero__subtitle {
+  font-size: clamp(0.95rem, 1.3vw, 1.15rem);
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 600px;
+  margin: 0 0 2rem;
+  font-weight: 400;
+}
+
+/* ==================== CTA BUTTONS ==================== */
+.hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.875rem;
+  margin-bottom: 2.5rem;
+}
+
+.hero__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero__btn--primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  box-shadow:
+    0 4px 14px rgba(16, 185, 129, 0.35),
+    0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.hero__btn--primary:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 20px rgba(16, 185, 129, 0.45),
+    0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.hero__btn--primary svg {
+  transition: transform 0.25s ease;
+}
+
+.hero__btn--primary:hover svg {
+  transform: translateX(3px);
+}
+
+.hero__btn--secondary {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.hero__btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-2px);
+}
+
+.hero__btn--secondary svg {
+  font-size: 0.85rem;
+}
+
+/* ==================== STATS ==================== */
+.hero__stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 1.25rem 1.75rem;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+}
+
+.hero__stat {
+  text-align: center;
+}
+
+.hero__stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.hero__stat-label {
+  display: block;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 0.3rem;
+  font-weight: 500;
+}
+
+.hero__stat-divider {
+  width: 1px;
+  height: 36px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.25) 50%,
+    transparent 100%
+  );
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  .hero__title {
+    font-size: clamp(1.85rem, 6vw, 2.5rem);
+  }
+
+  .hero__subtitle {
+    font-size: 0.95rem;
+  }
+
+  .hero__cta {
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .hero__btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hero__stats {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+  }
+
+  .hero__stat-divider {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.25) 50%,
+      transparent 100%
+    );
+  }
+
+  .hero__stat-value {
+    font-size: 1.35rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero__content {
+    padding: 1rem;
+  }
+
+  .hero__badge {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.75rem;
+  }
+
+  .hero__title {
+    font-size: 1.65rem;
+    margin-bottom: 1rem;
+  }
+
+  .hero__subtitle {
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .hero__btn {
+    padding: 0.8rem 1.25rem;
+    font-size: 0.85rem;
+  }
+
+  .hero__stats {
+    padding: 1rem;
+  }
+}
+
+/* ==================== REDUCED MOTION ==================== */
+@media (prefers-reduced-motion: reduce) {
+  .hero__badge-dot,
+  .hero__particle {
+    animation: none;
+  }
+
+  .hero__inner > * {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+}

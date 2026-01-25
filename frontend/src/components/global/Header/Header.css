@@ -1,10 +1,38 @@
 /* ==================== HEADER ==================== */
 .header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 1000;
-  background: var(--white);
-  box-shadow: var(--shadow-sm);
+  background: transparent;
+  transition:
+    background 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Header scrolled state - add this class via JS when scrolled */
+.header--scrolled {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.header--scrolled .header__link {
+  color: var(--gray-700);
+}
+
+.header--scrolled .header__link:hover {
+  color: var(--primary);
+}
+
+.header--scrolled .header__cart {
+  color: var(--gray-700);
+}
+
+.header--scrolled .header__burger {
+  color: var(--gray-700);
 }
 
 .header__container {
@@ -50,15 +78,15 @@
 
 .header__link {
   padding: var(--space-sm) var(--space-md);
-  color: var(--gray-700);
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
   border-radius: var(--radius-md);
   transition: all var(--transition-fast);
 }
 
 .header__link:hover {
-  color: var(--primary);
-  background: var(--gray-100);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 /* Actions */
@@ -76,14 +104,14 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  color: var(--gray-700);
+  color: rgba(255, 255, 255, 0.9);
   border-radius: var(--radius-full);
   transition: all var(--transition-fast);
 }
 
 .header__cart:hover {
-  color: var(--primary);
-  background: var(--gray-100);
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .header__cart svg {
@@ -125,6 +153,10 @@
 }
 
 .header__user-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.header--scrolled .header__user-btn:hover {
   background: var(--gray-100);
 }
 
@@ -142,8 +174,12 @@
 }
 
 .header__chevron {
-  color: var(--gray-500);
+  color: rgba(255, 255, 255, 0.7);
   transition: transform var(--transition-fast);
+}
+
+.header--scrolled .header__chevron {
+  color: var(--gray-500);
 }
 
 .header__chevron--open {
@@ -286,13 +322,18 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--gray-700);
+  color: rgba(255, 255, 255, 0.9);
   font-size: 1.5rem;
   border-radius: var(--radius-md);
   transition: all var(--transition-fast);
 }
 
 .header__burger:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.header--scrolled .header__burger:hover {
   background: var(--gray-100);
   color: var(--primary);
 }

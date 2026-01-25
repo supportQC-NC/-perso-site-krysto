@@ -3,7 +3,7 @@
 // Ces templates sont injectés en base de données lors du seed
 // ==========================================
 
-import { createDefaultBlock } from "../models/mailingTemplateModel.js";
+import { createDefaultBlock } from "../models/maillingTemplateModel.js";
 
 // Helper pour générer un ID unique
 const generateBlockId = () => `block_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

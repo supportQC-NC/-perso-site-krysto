@@ -1,0 +1,119 @@
+/* ==================== SETTINGS PANEL ==================== */
+.settings-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Sections */
+.settings-section {
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.settings-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-md);
+  border: none;
+  background: transparent;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  text-align: left;
+}
+
+.settings-section__header:hover {
+  background: var(--gray-50);
+}
+
+.settings-section__header svg {
+  color: var(--gray-400);
+  flex-shrink: 0;
+}
+
+.settings-section__content {
+  padding: 0 var(--space-md) var(--space-md);
+}
+
+/* Settings Field */
+.settings-field {
+  margin-bottom: var(--space-md);
+}
+
+.settings-field:last-child {
+  margin-bottom: 0;
+}
+
+.settings-field label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--gray-600);
+  margin-bottom: var(--space-xs);
+}
+
+.settings-field input[type="text"],
+.settings-field input[type="number"],
+.settings-field select,
+.settings-field textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.settings-field input:focus,
+.settings-field select:focus,
+.settings-field textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-100);
+}
+
+.settings-field textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.settings-field select {
+  cursor: pointer;
+  background: var(--white);
+}
+
+/* Color Input */
+.settings-panel .color-input {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.settings-panel .color-input input[type="color"] {
+  width: 40px;
+  height: 34px;
+  padding: 2px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.settings-panel .color-input input[type="text"] {
+  flex: 1;
+}
+
+/* Actions */
+.settings-actions {
+  padding: var(--space-md);
+  border-top: 1px solid var(--gray-100);
+  margin-top: auto;
+}
+
+.btn--full {
+  width: 100%;
+}

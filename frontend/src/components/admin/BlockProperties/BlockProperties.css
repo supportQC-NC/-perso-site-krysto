@@ -1,0 +1,229 @@
+/* ==================== BLOCK PROPERTIES ==================== */
+.block-properties {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Header */
+.properties-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.properties-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-800);
+  margin: 0;
+}
+
+.properties-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: var(--gray-100);
+  color: var(--gray-500);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.properties-close:hover {
+  background: var(--gray-200);
+  color: var(--gray-700);
+}
+
+/* Block Type */
+.properties-type {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.properties-type__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 8px;
+  background: var(--primary-100);
+  border-radius: var(--radius-sm);
+}
+
+.properties-type__actions {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.properties-type__actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: var(--white);
+  color: var(--gray-500);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.properties-type__actions button:hover {
+  background: var(--gray-200);
+  color: var(--gray-700);
+}
+
+.properties-type__actions button.btn-danger:hover {
+  background: #fef2f2;
+  color: var(--error);
+}
+
+/* Sections */
+.properties-section {
+  border-bottom: 1px solid var(--gray-100);
+}
+
+.properties-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-md);
+  border: none;
+  background: transparent;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.properties-section__header:hover {
+  background: var(--gray-50);
+}
+
+.properties-section__header svg {
+  color: var(--gray-400);
+}
+
+.properties-section__content {
+  padding: 0 var(--space-md) var(--space-md);
+}
+
+/* Property Field */
+.property-field {
+  margin-bottom: var(--space-md);
+}
+
+.property-field:last-child {
+  margin-bottom: 0;
+}
+
+.property-field label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--gray-600);
+  margin-bottom: var(--space-xs);
+}
+
+.property-field input[type="text"],
+.property-field input[type="number"],
+.property-field input[type="url"],
+.property-field select,
+.property-field textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.property-field input:focus,
+.property-field select:focus,
+.property-field textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-100);
+}
+
+.property-field textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+.property-field select {
+  cursor: pointer;
+  background: var(--white);
+}
+
+/* Color Input */
+.color-input {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.color-input input[type="color"] {
+  width: 40px;
+  height: 34px;
+  padding: 2px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.color-input input[type="text"] {
+  flex: 1;
+}
+
+/* Checkbox */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--gray-700);
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* Spacing Grid */
+.spacing-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-sm);
+}
+
+.spacing-grid .property-field {
+  margin-bottom: 0;
+}
+
+/* No Properties */
+.no-properties {
+  text-align: center;
+  color: var(--gray-400);
+  font-size: 0.85rem;
+  padding: var(--space-md);
+}

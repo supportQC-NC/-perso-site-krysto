@@ -32,12 +32,13 @@ import AdminProRequestListScreen from "./screens/admin/AdminProRequestScreen/Adm
 import AdminProOrderListScreen from "./screens/admin/AdminProOrderListScreen/AdminProOrderListScreen";
 import AdminReapproRequestListScreen from "./screens/admin/AdminReapproRequestListScreen/AdminReapproRequestListScreen";
 import AdminProspectListScreen from "./screens/admin/AdminProspectListScreen/AdminProspectListScreen";
-
+import AdminContactListScreen from "./screens/admin/AdminContactListScreen/AdminContactListScreen";
+import AdminOrderListScreen from "./screens/admin/AdminOrderListScreen/AdminOrderListScreen";
+import AdminMailingScreen from "./screens/admin/AdminMaillingScreen/AdminMaillingScreen";
+import AdminMailingEditorScreen from "./screens/admin/AdminMailingEditorScreen/AdminMailingEditorScreen";
 // Pro
 import ProLayout from "./components/Layout/ProLayout/ProLayout";
 import ProDashboardScreen from "./screens/pro/ProDashboardScreen/ProDashboardScreen";
-import AdminContactListScreen from "./screens/admin/AdminContactListScreen/AdminContactListScreen";
-import AdminOrderListScreen from "./screens/admin/AdminOrderListScreen/AdminOrderListScreen";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -82,11 +83,16 @@ const router = createBrowserRouter(
           
           {/* Marketing */}
           <Route path="prospects" element={<AdminProspectListScreen />} />
-          {/* <Route path="prospects" element={<AdminProspectListScreen />} /> */}
-          <Route path="contacts" element={<AdminContactListScreen />} />  
-           {/* Commandes */}
+          <Route path="mailing" element={<AdminMailingScreen />} />
+          <Route path="contacts" element={<AdminContactListScreen />} />
+
+          {/* Commandes */}
           <Route path="orders" element={<AdminOrderListScreen />} />
         </Route>
+
+        {/* Éditeur Mailing - SANS AdminLayout pour avoir tout l'écran */}
+        <Route path="mailing/editor" element={<AdminMailingEditorScreen />} />
+        <Route path="mailing/editor/:id" element={<AdminMailingEditorScreen />} />
       </Route>
 
     </Route>
